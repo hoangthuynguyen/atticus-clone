@@ -10,5 +10,23 @@
     ]
   },
   "exceptionLogging": "STACKDRIVER",
-  "runtimeVersion": "V8"
+  "runtimeVersion": "V8",
+  "addOns": {
+    "common": {
+      "name": "Bookify",
+      "logoUrl": "https://bookify.pages.dev/logo-32.png",
+      "layoutProperties": {
+        "primaryColor": "#0f172a",
+        "secondaryColor": "#3b82f6"
+      }
+    },
+    "docs": {
+      "homepageTrigger": {
+        "runFunction": "onHomepage"
+      },
+      "onFileScopeGrantedTrigger": {
+        "runFunction": "onFileScopeGranted"
+      }
+    }
+  }
 }
