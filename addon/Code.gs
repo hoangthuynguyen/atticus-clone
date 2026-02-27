@@ -1,0 +1,239 @@
+/**
+ * Atticus Book Formatter — Main Entry Points
+ * Google Workspace Add-on for Google Docs
+ * @OnlyCurrentDoc
+ */
+
+// =============================================================================
+// Configuration
+// =============================================================================
+
+const CONFIG = {
+  API_BASE_URL: 'https://atticus-api.onrender.com',
+  FRONTEND_URL: 'https://atticus.pages.dev',
+  SIDEBAR_WIDTH: 350,
+  SIDEBAR_TITLE: 'Atticus Book Formatter',
+};
+
+// =============================================================================
+// Add-on Entry Points
+// =============================================================================
+
+/**
+ * Called when the document is opened. Adds the Atticus menu.
+ * @param {GoogleAppsScript.Events.DocsOnOpen} e - The onOpen event
+ */
+function onOpen(e) {
+  DocumentApp.getUi()
+    .createMenu('Atticus')
+    .addItem('Open Formatter', 'openSidebar')
+    .addSeparator()
+    .addSubMenu(
+      DocumentApp.getUi().createMenu('Quick Export')
+        .addItem('Export EPUB', 'quickExportEpub')
+        .addItem('Export PDF', 'quickExportPdf')
+        .addItem('Export DOCX', 'quickExportDocx')
+    )
+    .addSeparator()
+    .addSubMenu(
+      DocumentApp.getUi().createMenu('Insert')
+        .addItem('Chapter Break', 'insertChapterBreak')
+        .addItem('Scene Break (***)', 'insertDefaultSceneBreak')
+    )
+    .addSeparator()
+    .addItem('Word Count', 'showWordCount')
+    .addItem('Validate for EPUB', 'quickValidate')
+    .addToUi();
+}
+
+/**
+ * Called when the add-on homepage is opened (Card Service).
+ * @param {object} e - The homepage event
+ * @returns {GoogleAppsScript.Card_Service.Card}
+ */
+function onHomepage(e) {
+  return CardService.newCardBuilder()
+    .setHeader(
+      CardService.newCardHeader()
+        .setTitle('Atticus Book Formatter')
+        .setSubtitle('Format & Export your book')
+        .setImageStyle(CardService.ImageStyle.CIRCLE)
+    )
+    .addSection(
+      CardService.newCardSection()
+        .addWidget(
+          CardService.newTextParagraph()
+            .setText('Professional book formatting and export directly from Google Docs. Export to EPUB, PDF, and DOCX.')
+        )
+        .addWidget(
+          CardService.newTextButton()
+            .setText('Open Atticus Panel')
+            .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+            .setOnClickAction(CardService.newAction().setFunctionName('openSidebar'))
+        )
+    )
+    .build();
+}
+
+/**
+ * Called when file scope is granted.
+ * @param {object} e - The event
+ */
+function onFileScopeGranted(e) {
+  openSidebar();
+}
+
+// =============================================================================
+// Sidebar
+// =============================================================================
+
+/**
+ * Opens the Atticus sidebar with the React app loaded in an iframe.
+ */
+function openSidebar() {
+  const html = HtmlService.createHtmlOutputFromFile('Sidebar')
+    .setTitle(CONFIG.SIDEBAR_TITLE)
+    .setWidth(CONFIG.SIDEBAR_WIDTH);
+  DocumentApp.getUi().showSidebar(html);
+}
+
+// =============================================================================
+// Quick Actions (Menu items)
+// =============================================================================
+
+/**
+ * Inserts a chapter break (Heading 1) at the cursor position.
+ */
+function insertChapterBreak() {
+  try {
+    const doc = DocumentApp.getActiveDocument();
+    const cursor = doc.getCursor();
+
+    if (!cursor) {
+      DocumentApp.getUi().alert('Place your cursor where you want the chapter break.');
+      return;
+    }
+
+    const body = doc.getBody();
+    const element = cursor.getElement();
+    const offset = cursor.getOffset();
+
+    // Find the paragraph containing the cursor
+    let paragraph = element;
+    while (paragraph && paragraph.getType() !== DocumentApp.ElementType.PARAGRAPH) {
+      paragraph = paragraph.getParent();
+    }
+
+    if (!paragraph) {
+      DocumentApp.getUi().alert('Could not find a valid position for the chapter break.');
+      return;
+    }
+
+    // Insert new paragraph after current one
+    const parentIndex = body.getChildIndex(paragraph);
+    const newPara = body.insertParagraph(parentIndex + 1, 'Chapter Title');
+    newPara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+    newPara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+
+    // Move cursor to the new paragraph
+    doc.setCursor(doc.newPosition(newPara, 0));
+
+    DocumentApp.getActiveDocument().getUi().alert('Chapter break inserted! Edit the title above.');
+  } catch (error) {
+    DocumentApp.getUi().alert('Error: ' + error.message);
+  }
+}
+
+/**
+ * Inserts a default scene break (***) at cursor.
+ */
+function insertDefaultSceneBreak() {
+  insertSceneBreak('* * *');
+}
+
+/**
+ * Shows a quick word count dialog.
+ */
+function showWordCount() {
+  try {
+    const stats = getWordCount();
+    DocumentApp.getUi().alert(
+      'Word Count',
+      `Total: ${stats.total.toLocaleString()} words\n` +
+      `Characters: ${stats.characters.toLocaleString()}\n` +
+      `Paragraphs: ${stats.paragraphs.toLocaleString()}\n` +
+      `Chapters (H1): ${stats.chapters}`,
+      DocumentApp.getUi().ButtonSet.OK
+    );
+  } catch (error) {
+    DocumentApp.getUi().alert('Error: ' + error.message);
+  }
+}
+
+/**
+ * Quick EPUB validation from menu.
+ */
+function quickValidate() {
+  try {
+    const content = getDocumentContent();
+    const result = callExportAPI('/validate/epub', { docContent: content.html });
+
+    let message = result.summary + '\n\n';
+    if (result.errors && result.errors.length > 0) {
+      message += 'ERRORS:\n';
+      result.errors.forEach(e => { message += `- ${e.message}\n`; });
+    }
+    if (result.warnings && result.warnings.length > 0) {
+      message += '\nWARNINGS:\n';
+      result.warnings.forEach(w => { message += `- ${w.message}\n`; });
+    }
+
+    DocumentApp.getUi().alert('EPUB Validation', message, DocumentApp.getUi().ButtonSet.OK);
+  } catch (error) {
+    DocumentApp.getUi().alert('Validation failed: ' + error.message);
+  }
+}
+
+// =============================================================================
+// Quick Exports (Menu items)
+// =============================================================================
+
+function quickExportEpub() {
+  try {
+    DocumentApp.getUi().alert('Starting EPUB export... This may take 30-60 seconds.');
+    const result = exportEpub({ theme: {}, dropCaps: false, sceneBreakSymbol: '* * *' });
+    DocumentApp.getUi().alert(
+      'EPUB Export Complete',
+      `File: ${result.filename}\nSize: ${result.sizeFormatted}\n\nDownload URL has been copied. ` +
+      'It will expire in 24 hours.',
+      DocumentApp.getUi().ButtonSet.OK
+    );
+  } catch (error) {
+    DocumentApp.getUi().alert('Export failed: ' + error.message);
+  }
+}
+
+function quickExportPdf() {
+  try {
+    DocumentApp.getUi().alert('Starting PDF export... This may take 60-120 seconds.');
+    const result = exportPdf({
+      trimSize: '6x9', theme: {}, orphanControl: true, mirrorMargins: true
+    });
+    DocumentApp.getUi().alert(
+      'PDF Export Complete',
+      `File: ${result.filename}\nPages: ${result.pageCount}\nSize: ${result.sizeFormatted}`,
+      DocumentApp.getUi().ButtonSet.OK
+    );
+  } catch (error) {
+    DocumentApp.getUi().alert('Export failed: ' + error.message);
+  }
+}
+
+function quickExportDocx() {
+  try {
+    const result = exportDocx({ theme: {} });
+    DocumentApp.getUi().alert('DOCX Export Complete', `File: ${result.filename}`, DocumentApp.getUi().ButtonSet.OK);
+  } catch (error) {
+    DocumentApp.getUi().alert('Export failed: ' + error.message);
+  }
+}

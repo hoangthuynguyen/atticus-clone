@@ -1,0 +1,23 @@
+name: Keep Render.com Alive
+
+# Ping Render.com free tier every 14 minutes to prevent cold starts.
+# Render free tier spins down after 15 minutes of inactivity.
+# GitHub Actions cron: 2000 free minutes/month = enough for this.
+
+on:
+  schedule:
+    - cron: '*/14 * * * *'  # Every 14 minutes
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render backend
+        run: |
+          RESPONSE=$(curl -sf -o /dev/null -w "%{http_code}" \
+            https://atticus-api.onrender.com/health || echo "000")
+          echo "Health check response: $RESPONSE"
+          if [ "$RESPONSE" != "200" ]; then
+            echo "Warning: Backend returned $RESPONSE (may be starting up)"
+          fi

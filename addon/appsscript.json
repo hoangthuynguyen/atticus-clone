@@ -1,0 +1,29 @@
+{
+  "timeZone": "Asia/Ho_Chi_Minh",
+  "dependencies": {},
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/documents.currentonly",
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/script.external_request",
+    "https://www.googleapis.com/auth/userinfo.email"
+  ],
+  "addOns": {
+    "common": {
+      "name": "Atticus Book Formatter",
+      "logoUrl": "https://atticus.pages.dev/icon-128.png",
+      "homepageTrigger": { "runFunction": "onHomepage" },
+      "universalActions": [
+        { "label": "Open Atticus Panel", "runFunction": "openSidebar" }
+      ]
+    },
+    "docs": {
+      "onFileScopeGrantedTrigger": { "runFunction": "onFileScopeGranted" },
+      "createActionTriggers": [
+        { "id": "createChapter", "label": "Insert Chapter Break", "runFunction": "insertChapterBreak" }
+      ]
+    }
+  }
+}

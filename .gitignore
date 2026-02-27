@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnp.*
+
+# Build outputs
+frontend/dist/
+backend/dist/
+
+# Environment variables
+.env
+.env.local
+.env.production
+backend/.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Google Apps Script
+addon/.clasp.json
+.clasprc.json
+
+# Testing
+coverage/
+
+# Docker
+.docker/
+
+# Supabase
+supabase/.temp/
