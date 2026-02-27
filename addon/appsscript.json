@@ -1,6 +1,13 @@
 {
   "timeZone": "America/New_York",
   "dependencies": {
+    "advancedServices": [
+      {
+        "userSymbol": "Drive",
+        "serviceId": "drive",
+        "version": "v2"
+      }
+    ]
   },
   "exceptionLogging": "STACKDRIVER",
   "runtimeVersion": "V8"

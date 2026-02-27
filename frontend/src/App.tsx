@@ -8,51 +8,62 @@ import { PreviewerPanel } from './components/PreviewerPanel';
 import { VersionManagerPanel } from './components/VersionManagerPanel';
 
 const TABS = [
-  { id: 'export' as const, label: 'Export', icon: '>' },
-  { id: 'formatting' as const, label: 'Format', icon: 'A' },
-  { id: 'themes' as const, label: 'Themes', icon: '#' },
-  { id: 'tools' as const, label: 'Tools', icon: '+' },
-  { id: 'structure' as const, label: 'Structure', icon: '=' },
-  { id: 'previewer' as const, label: 'Preview', icon: 'D' },
-  { id: 'versions' as const, label: 'Versions', icon: 'V' },
+  { id: 'export' as const, label: 'Export', icon: '↓' },
+  { id: 'formatting' as const, label: 'Format', icon: '¶' },
+  { id: 'themes' as const, label: 'Themes', icon: '◐' },
+  { id: 'tools' as const, label: 'Tools', icon: '✎' },
+  { id: 'structure' as const, label: 'Structure', icon: '☰' },
+  { id: 'previewer' as const, label: 'Preview', icon: '⊡' },
+  { id: 'versions' as const, label: 'Versions', icon: '⌛' },
 ];
+
+
 
 export default function App() {
   const { activeTab, setActiveTab, error, setError } = useAppStore();
 
   return (
-    <div className="flex flex-col h-screen max-w-sidebar">
+    <div className="flex flex-col h-screen max-w-sidebar bg-white">
       {/* Header */}
-      <header className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 bg-white">
-        <div className="w-6 h-6 bg-atticus-600 rounded flex items-center justify-center">
-          <span className="text-white text-xs font-bold">A</span>
+      <header className="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
+        <div className="w-7 h-7 bg-atticus-600 rounded-lg flex items-center justify-center shadow-sm">
+          <span className="text-white text-[13px] font-bold">A</span>
         </div>
-        <span className="text-sm font-semibold text-gray-800">Atticus</span>
+        <div>
+          <span className="text-sm font-bold text-gray-900">Atticus</span>
+          <span className="ml-1.5 text-[10px] text-gray-400">Book Formatter</span>
+        </div>
       </header>
 
       {/* Tab Navigation */}
-      <nav className="flex border-b border-gray-200 bg-gray-50 overflow-x-auto">
+      <nav className="flex overflow-x-auto border-b border-gray-100 bg-gray-50" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 min-w-0 px-1 py-2 text-[11px] font-medium text-center transition-colors
+            title={tab.label}
+            className={`flex-1 min-w-[70px] flex-shrink-0 py-2.5 flex flex-col items-center gap-1 transition-colors border-b-2
               ${activeTab === tab.id
-                ? 'text-atticus-600 border-b-2 border-atticus-600 bg-white'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                ? 'border-atticus-600 text-atticus-600 bg-white'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-white/60'
               }`}
           >
-            {tab.label}
+            <span className="text-[14px] leading-none block">{tab.icon}</span>
+            <span className="text-[10px] font-medium whitespace-nowrap block">{tab.label}</span>
           </button>
         ))}
       </nav>
 
       {/* Error Banner */}
       {error && (
-        <div className="mx-3 mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 flex items-start gap-2">
+        <div className="mx-3 mt-2 p-2 bg-red-50 border border-red-200 rounded-lg text-[11px] text-red-700 flex items-start gap-2">
+          <span className="text-red-400 font-bold mt-0.5 flex-shrink-0">!</span>
           <span className="flex-1">{error}</span>
-          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 font-bold">
-            x
+          <button
+            onClick={() => setError(null)}
+            className="text-red-300 hover:text-red-500 text-sm font-bold leading-none flex-shrink-0"
+          >
+            ×
           </button>
         </div>
       )}
@@ -69,8 +80,8 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="px-3 py-1.5 border-t border-gray-100 bg-gray-50">
-        <p className="text-[10px] text-gray-400 text-center">Atticus Book Formatter v1.0</p>
+      <footer className="px-3 py-1 border-t border-gray-100 bg-gray-50">
+        <p className="text-[9px] text-gray-300 text-center font-medium tracking-wider uppercase">Atticus v1.0</p>
       </footer>
     </div>
   );

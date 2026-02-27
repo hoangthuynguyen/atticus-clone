@@ -21,37 +21,48 @@ interface StreakData {
   last30Days: Array<{ date: string; words: number; wrote: boolean }>;
 }
 
+type Section = 'wordcount' | 'sprint' | 'streak' | 'quotes' | 'analyze';
+
+const SECTIONS: { id: Section; label: string; icon: string }[] = [
+  { id: 'wordcount', label: 'Words',   icon: '#' },
+  { id: 'sprint',    label: 'Sprint',  icon: '⏱' },
+  { id: 'streak',    label: 'Streak',  icon: '🔥' },
+  { id: 'quotes',    label: 'Quotes',  icon: '"' },
+  { id: 'analyze',   label: 'Analyze', icon: '≡' },
+];
+
 export function WritingToolsPanel() {
-  const [activeSection, setActiveSection] = useState<'wordcount' | 'sprint' | 'streak' | 'quotes' | 'analyze'>('wordcount');
+  const [activeSection, setActiveSection] = useState<Section>('wordcount');
 
   return (
-    <div className="p-3 space-y-3">
-      <h2 className="text-sm font-semibold text-gray-800">Writing Tools</h2>
-
-      <div className="flex flex-wrap gap-1">
-        {[
-          { id: 'wordcount' as const, label: 'Word Count' },
-          { id: 'sprint' as const, label: 'Sprint Timer' },
-          { id: 'streak' as const, label: 'Streak' },
-          { id: 'quotes' as const, label: 'Smart Quotes' },
-          { id: 'analyze' as const, label: 'Analyze' },
-        ].map((s) => (
-          <button
-            key={s.id}
-            onClick={() => setActiveSection(s.id)}
-            className={`px-2 py-1 rounded text-[11px] font-medium
-              ${activeSection === s.id ? 'bg-atticus-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-          >
-            {s.label}
-          </button>
-        ))}
+    <div className="flex flex-col h-full">
+      <div className="px-3 pt-3 pb-2 border-b border-gray-100 bg-gray-50">
+        <h2 className="text-sm font-semibold text-gray-800 mb-2">Writing Tools</h2>
+        <div className="flex gap-1">
+          {SECTIONS.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setActiveSection(s.id)}
+              title={s.label}
+              className={`flex-1 py-1.5 rounded-md text-center transition-colors
+                ${activeSection === s.id
+                  ? 'bg-atticus-600 text-white'
+                  : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200'}`}
+            >
+              <span className="block text-[13px]">{s.icon}</span>
+              <span className="block text-[9px] font-medium mt-0.5">{s.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      {activeSection === 'wordcount' && <WordCountSection />}
-      {activeSection === 'sprint' && <SprintTimerSection />}
-      {activeSection === 'streak' && <StreakSection />}
-      {activeSection === 'quotes' && <SmartQuotesSection />}
-      {activeSection === 'analyze' && <AnalyzeSection />}
+      <div className="flex-1 overflow-y-auto p-3 pb-20">
+        {activeSection === 'wordcount' && <WordCountSection />}
+        {activeSection === 'sprint'    && <SprintTimerSection />}
+        {activeSection === 'streak'    && <StreakSection />}
+        {activeSection === 'quotes'    && <SmartQuotesSection />}
+        {activeSection === 'analyze'   && <AnalyzeSection />}
+      </div>
     </div>
   );
 }
@@ -61,8 +72,8 @@ export function WritingToolsPanel() {
 // =============================================================================
 
 function WordCountSection() {
-  const [data, setData] = useState<WordCountResult | null>(null);
-  const [daily, setDaily] = useState<DailyProgress | null>(null);
+  const [data, setData]       = useState<WordCountResult | null>(null);
+  const [daily, setDaily]     = useState<DailyProgress | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function refresh() {
@@ -75,7 +86,7 @@ function WordCountSection() {
       setData(wc);
       setDaily(dp);
     } catch {
-      // Silently fail
+      // silently fail
     } finally {
       setLoading(false);
     }
@@ -85,43 +96,62 @@ function WordCountSection() {
 
   return (
     <div className="space-y-3">
-      <button onClick={refresh} disabled={loading} className="text-xs text-atticus-600 hover:underline disabled:opacity-50">
-        {loading ? 'Counting...' : 'Refresh'}
-      </button>
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] text-gray-500">Document statistics</p>
+        <button
+          onClick={refresh}
+          disabled={loading}
+          className="text-[11px] text-atticus-600 hover:underline disabled:opacity-50 font-medium"
+        >
+          {loading ? 'Counting…' : '↻ Refresh'}
+        </button>
+      </div>
+
+      {loading && !data && (
+        <div className="grid grid-cols-2 gap-2">
+          {[1,2,3,4].map(i => <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />)}
+        </div>
+      )}
 
       {data && (
         <div className="grid grid-cols-2 gap-2">
-          <Stat label="Words" value={data.total.toLocaleString()} />
-          <Stat label="Characters" value={data.characters.toLocaleString()} />
-          <Stat label="Paragraphs" value={data.paragraphs.toLocaleString()} />
-          <Stat label="Chapters" value={String(data.chapters)} />
+          <StatCard label="Words"      value={data.total.toLocaleString()} accent />
+          <StatCard label="Characters" value={data.characters.toLocaleString()} />
+          <StatCard label="Paragraphs" value={data.paragraphs.toLocaleString()} />
+          <StatCard label="Chapters"   value={String(data.chapters)} />
         </div>
       )}
 
       {daily && (
-        <div className="p-3 bg-gray-50 rounded">
-          <div className="flex justify-between text-[11px] mb-1">
-            <span className="text-gray-600">Daily Goal</span>
-            <span className="font-medium">{daily.today} / {daily.goal}</span>
+        <div className="p-3 bg-gray-50 border border-gray-100 rounded-lg space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-[11px] text-gray-600 font-medium">Daily Goal</span>
+            <span className="text-[11px] font-semibold text-gray-800">
+              {daily.today.toLocaleString()} / {daily.goal.toLocaleString()}
+            </span>
           </div>
-          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-atticus-600 rounded-full transition-all"
+              className={`h-full rounded-full transition-all ${daily.percentage >= 100 ? 'bg-green-500' : 'bg-atticus-600'}`}
               style={{ width: `${Math.min(100, daily.percentage)}%` }}
             />
           </div>
-          <p className="text-[10px] text-gray-400 mt-1">{daily.percentage}% complete</p>
+          <p className="text-[10px] text-gray-400">
+            {daily.percentage >= 100
+              ? `Goal reached! ${daily.today - daily.goal} words ahead`
+              : `${daily.goal - daily.today} words to go · ${daily.percentage}%`}
+          </p>
         </div>
       )}
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="p-2 bg-gray-50 rounded">
-      <p className="text-[10px] text-gray-500">{label}</p>
-      <p className="text-sm font-semibold text-gray-800">{value}</p>
+    <div className={`p-2.5 rounded-lg border ${accent ? 'bg-atticus-50 border-atticus-100' : 'bg-white border-gray-100'}`}>
+      <p className="text-[10px] text-gray-500 mb-0.5">{label}</p>
+      <p className={`text-base font-bold ${accent ? 'text-atticus-700' : 'text-gray-800'}`}>{value}</p>
     </div>
   );
 }
@@ -131,40 +161,27 @@ function Stat({ label, value }: { label: string; value: string }) {
 // =============================================================================
 
 function SprintTimerSection() {
-  const [duration, setDuration] = useState(25); // minutes
-  const [remaining, setRemaining] = useState(25 * 60); // seconds
-  const [running, setRunning] = useState(false);
+  const [duration, setDuration]   = useState(25);
+  const [remaining, setRemaining] = useState(25 * 60);
+  const [running, setRunning]     = useState(false);
   const intervalRef = useRef<number | null>(null);
+  const isComplete = remaining === 0;
+  const progress = ((duration * 60 - remaining) / (duration * 60)) * 100;
 
   useEffect(() => {
     if (running && remaining > 0) {
       intervalRef.current = window.setInterval(() => {
         setRemaining((r) => {
-          if (r <= 1) {
-            setRunning(false);
-            return 0;
-          }
+          if (r <= 1) { setRunning(false); return 0; }
           return r - 1;
         });
       }, 1000);
     }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [running, remaining]);
 
-  function formatTime(seconds: number) {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  }
-
-  function handleStart() {
-    setRunning(true);
-  }
-
-  function handlePause() {
-    setRunning(false);
+  function formatTime(s: number) {
+    return `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
   }
 
   function handleReset() {
@@ -174,34 +191,52 @@ function SprintTimerSection() {
 
   return (
     <div className="space-y-4">
-      {/* Timer display */}
-      <div className="text-center py-4">
-        <p className="text-4xl font-mono font-bold text-gray-800">{formatTime(remaining)}</p>
-        <p className="text-[11px] text-gray-500 mt-1">
-          {remaining === 0 ? 'Sprint Complete!' : running ? 'Writing...' : 'Ready'}
-        </p>
+      {/* Circular timer display */}
+      <div className="flex flex-col items-center py-3">
+        <div className="relative w-32 h-32">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="44" fill="none" stroke="#f1f5f9" strokeWidth="8" />
+            <circle
+              cx="50" cy="50" r="44" fill="none"
+              stroke={isComplete ? '#22c55e' : '#2563eb'}
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={`${2 * Math.PI * 44}`}
+              strokeDashoffset={`${2 * Math.PI * 44 * (1 - progress / 100)}`}
+              className="transition-all duration-1000"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-2xl font-mono font-bold text-gray-800">{formatTime(remaining)}</span>
+            <span className="text-[10px] text-gray-400 mt-0.5">
+              {isComplete ? 'Done!' : running ? 'Writing…' : 'Ready'}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Controls */}
       <div className="flex gap-2">
         {!running ? (
           <button
-            onClick={handleStart}
-            className="flex-1 py-2 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700"
+            onClick={() => setRunning(true)}
+            disabled={isComplete}
+            className="flex-1 py-2.5 bg-green-600 text-white rounded-lg text-xs font-semibold
+              hover:bg-green-700 disabled:opacity-50 transition-colors"
           >
             {remaining < duration * 60 ? 'Resume' : 'Start Sprint'}
           </button>
         ) : (
           <button
-            onClick={handlePause}
-            className="flex-1 py-2 bg-yellow-500 text-white rounded text-xs font-medium hover:bg-yellow-600"
+            onClick={() => setRunning(false)}
+            className="flex-1 py-2.5 bg-amber-500 text-white rounded-lg text-xs font-semibold hover:bg-amber-600 transition-colors"
           >
             Pause
           </button>
         )}
         <button
           onClick={handleReset}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded text-xs font-medium hover:bg-gray-300"
+          className="px-4 py-2.5 bg-gray-100 text-gray-600 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors border border-gray-200"
         >
           Reset
         </button>
@@ -209,14 +244,16 @@ function SprintTimerSection() {
 
       {/* Duration presets */}
       <div>
-        <label className="text-[11px] text-gray-500 block mb-1">Sprint Duration</label>
-        <div className="flex gap-1">
+        <p className="text-[11px] text-gray-500 mb-1.5">Duration</p>
+        <div className="grid grid-cols-7 gap-1">
           {[10, 15, 20, 25, 30, 45, 60].map((m) => (
             <button
               key={m}
               onClick={() => { setDuration(m); setRemaining(m * 60); setRunning(false); }}
-              className={`flex-1 py-1 rounded text-[10px]
-                ${duration === m ? 'bg-atticus-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              className={`py-1.5 rounded-md text-[10px] font-medium transition-colors
+                ${duration === m
+                  ? 'bg-atticus-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
             >
               {m}m
             </button>
@@ -232,53 +269,63 @@ function SprintTimerSection() {
 // =============================================================================
 
 function StreakSection() {
-  const [data, setData] = useState<StreakData | null>(null);
+  const [data, setData]       = useState<StreakData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadStreak();
-  }, []);
+  useEffect(() => { loadStreak(); }, []);
 
   async function loadStreak() {
     try {
       const streak = await callGas<StreakData>('getWritingStreak');
       setData(streak);
     } catch {
-      // Silently fail
+      // silently fail
     } finally {
       setLoading(false);
     }
   }
 
-  if (loading) return <div className="h-20 bg-gray-100 rounded animate-pulse" />;
-  if (!data) return <p className="text-[11px] text-gray-500">Could not load streak data.</p>;
+  if (loading) return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-3 gap-2">
+        {[1,2,3].map(i => <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />)}
+      </div>
+      <div className="h-24 bg-gray-100 rounded-lg animate-pulse" />
+    </div>
+  );
+
+  if (!data) return (
+    <div className="text-center py-8">
+      <p className="text-[11px] text-gray-500">Could not load streak data.</p>
+      <button onClick={loadStreak} className="mt-2 text-xs text-atticus-600 hover:underline">Retry</button>
+    </div>
+  );
 
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-2">
-        <Stat label="Current" value={`${data.currentStreak} days`} />
-        <Stat label="Longest" value={`${data.longestStreak} days`} />
-        <Stat label="Total" value={`${data.totalDays} days`} />
+        <StreakCard label="Current" value={data.currentStreak} highlight />
+        <StreakCard label="Longest" value={data.longestStreak} />
+        <StreakCard label="Total"   value={data.totalDays} />
       </div>
 
-      {/* Heatmap */}
-      <div>
-        <p className="text-[11px] text-gray-500 mb-1">Last 30 Days</p>
-        <div className="grid grid-cols-10 gap-0.5">
+      <div className="p-3 bg-gray-50 border border-gray-100 rounded-lg">
+        <p className="text-[11px] text-gray-500 mb-2 font-medium">Last 30 Days</p>
+        <div className="grid grid-cols-10 gap-1">
           {data.last30Days.map((day, i) => (
             <div
               key={i}
-              className="aspect-square rounded-sm"
+              className="aspect-square rounded"
               title={`${day.date}: ${day.words} words`}
               style={{
                 backgroundColor: day.words > 0
-                  ? `rgba(37, 99, 235, ${Math.min(1, day.words / 1000)})`
-                  : '#f1f5f9',
+                  ? `rgba(37, 99, 235, ${0.2 + Math.min(0.8, day.words / 1200)})`
+                  : '#e2e8f0',
               }}
             />
           ))}
         </div>
-        <div className="flex justify-between text-[9px] text-gray-400 mt-1">
+        <div className="flex justify-between text-[9px] text-gray-400 mt-1.5">
           <span>30 days ago</span>
           <span>Today</span>
         </div>
@@ -287,15 +334,28 @@ function StreakSection() {
   );
 }
 
+function StreakCard({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
+  return (
+    <div className={`p-2.5 rounded-lg border text-center ${highlight ? 'bg-orange-50 border-orange-200' : 'bg-white border-gray-100'}`}>
+      <p className={`text-xl font-bold ${highlight ? 'text-orange-600' : 'text-gray-800'}`}>{value}</p>
+      <p className={`text-[9px] ${highlight ? 'text-orange-400' : 'text-gray-400'}`}>days</p>
+      <p className="text-[10px] text-gray-500 mt-0.5">{label}</p>
+    </div>
+  );
+}
+
 // =============================================================================
-// Smart Quotes Scanner
+// Smart Quotes
 // =============================================================================
 
 function SmartQuotesSection() {
-  const [scanResult, setScanResult] = useState<{ issues: Array<{ type: string; message: string; count: number }>; totalIssues: number } | null>(null);
+  const [scanResult, setScanResult] = useState<{
+    issues: Array<{ type: string; message: string; count: number }>;
+    totalIssues: number;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [fixing, setFixing] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
+  const [fixing, setFixing]   = useState(false);
+  const [status, setStatus]   = useState<string | null>(null);
 
   async function handleScan() {
     setLoading(true);
@@ -325,37 +385,45 @@ function SmartQuotesSection() {
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] text-gray-500">Scan for inconsistent quotation marks</p>
+      <p className="text-[11px] text-gray-500">
+        Scan for straight "quotes" and fix them to curly "quotes"
+      </p>
 
       <button
         onClick={handleScan}
         disabled={loading}
-        className="w-full py-2 bg-atticus-600 text-white rounded text-xs font-medium disabled:opacity-50"
+        className="w-full py-2.5 bg-atticus-600 text-white rounded-lg text-xs font-semibold
+          hover:bg-atticus-700 disabled:opacity-50 transition-colors"
       >
-        {loading ? 'Scanning...' : 'Scan Document'}
+        {loading ? 'Scanning…' : 'Scan Document'}
       </button>
 
       {status && (
-        <p className="text-[11px] p-2 bg-green-50 text-green-600 rounded">{status}</p>
+        <p className="text-[11px] p-2 bg-green-50 text-green-700 rounded-md border border-green-200">{status}</p>
       )}
 
       {scanResult && (
         <div className="space-y-2">
           {scanResult.totalIssues === 0 ? (
-            <p className="text-[11px] text-green-600 p-2 bg-green-50 rounded">All quotes are consistent!</p>
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-center">
+              <p className="text-xl mb-1">✓</p>
+              <p className="text-xs text-green-700 font-semibold">All quotes are consistent!</p>
+            </div>
           ) : (
             <>
               {scanResult.issues.map((issue, i) => (
-                <div key={i} className="p-2 bg-yellow-50 border border-yellow-200 rounded">
-                  <p className="text-[11px] text-yellow-800">{issue.message}</p>
+                <div key={i} className="p-2.5 bg-amber-50 border border-amber-200 rounded-md flex gap-2">
+                  <span className="text-amber-500 text-sm flex-shrink-0">⚠</span>
+                  <p className="text-[11px] text-amber-800">{issue.message}</p>
                 </div>
               ))}
               <button
                 onClick={handleFixAll}
                 disabled={fixing}
-                className="w-full py-2 bg-yellow-500 text-white rounded text-xs font-medium disabled:opacity-50"
+                className="w-full py-2.5 bg-amber-500 text-white rounded-lg text-xs font-semibold
+                  hover:bg-amber-600 disabled:opacity-50 transition-colors"
               >
-                {fixing ? 'Fixing...' : `Fix All (${scanResult.totalIssues} issues)`}
+                {fixing ? 'Fixing…' : `Fix All ${scanResult.totalIssues} Issues`}
               </button>
             </>
           )}
@@ -378,9 +446,9 @@ interface AnalysisResult {
 }
 
 function AnalyzeSection() {
-  const [data, setData] = useState<AnalysisResult | null>(null);
+  const [data, setData]       = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]     = useState<string | null>(null);
 
   async function handleAnalyze() {
     setLoading(true);
@@ -395,69 +463,74 @@ function AnalyzeSection() {
     }
   }
 
+  const gradeLabel = (g: number) => {
+    if (g <= 6) return 'Easy read';
+    if (g <= 9) return 'Moderate';
+    if (g <= 12) return 'Advanced';
+    return 'Expert level';
+  };
+
   return (
-    <div className="space-y-4">
-      <p className="text-[11px] text-gray-500">Analyze reading level, cliches, and word frequencies.</p>
+    <div className="space-y-3">
+      <p className="text-[11px] text-gray-500">Analyze reading level, clichés, and overused words.</p>
 
       <button
         onClick={handleAnalyze}
         disabled={loading}
-        className="w-full py-2 bg-atticus-600 text-white rounded text-xs font-medium hover:bg-atticus-700 disabled:opacity-50"
+        className="w-full py-2.5 bg-atticus-600 text-white rounded-lg text-xs font-semibold
+          hover:bg-atticus-700 disabled:opacity-50 transition-colors"
       >
-        {loading ? 'Analyzing...' : 'Run Analysis'}
+        {loading ? 'Analyzing…' : 'Run Analysis'}
       </button>
 
-      {error && <p className="text-[11px] text-red-600 p-2 bg-red-50 rounded">{error}</p>}
+      {error && (
+        <p className="text-[11px] text-red-600 p-2 bg-red-50 rounded-md border border-red-200">{error}</p>
+      )}
 
       {data && (
-        <div className="space-y-4">
-          {/* Reading Level */}
-          <div className="p-3 bg-gray-50 rounded border border-gray-100">
-            <h3 className="text-xs font-semibold text-gray-800 mb-2">Readability</h3>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] text-gray-600">Flesch-Kincaid Grade</span>
-              <span className="text-sm font-bold text-atticus-600">{data.readingLevel}</span>
+        <div className="space-y-3">
+          <div className="p-3 bg-gray-50 border border-gray-100 rounded-lg">
+            <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Readability</p>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-atticus-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-atticus-700 font-bold">{data.readingLevel}</span>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-800">Grade {data.readingLevel} · {gradeLabel(data.readingLevel)}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">Flesch-Kincaid score</p>
+              </div>
             </div>
-            <p className="text-[10px] text-gray-400 mt-1">
-              Estimated US school grade level required to understand the text.
-            </p>
           </div>
 
-          {/* Cliches */}
-          <div className="p-3 bg-gray-50 rounded border border-gray-100">
-            <h3 className="text-xs font-semibold text-gray-800 mb-2">Cliché Finder</h3>
+          <div className="p-3 bg-gray-50 border border-gray-100 rounded-lg">
+            <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Clichés</p>
             {data.cliches.length === 0 ? (
               <p className="text-[11px] text-green-600">No common clichés found.</p>
             ) : (
               <ul className="space-y-1">
                 {data.cliches.map((c, i) => (
                   <li key={i} className="flex justify-between items-center text-[11px]">
-                    <span className="text-gray-700">"{c.phrase}"</span>
-                    <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded font-medium">
-                      x{c.count}
-                    </span>
+                    <span className="text-gray-700 truncate mr-2">"{c.phrase}"</span>
+                    <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-medium flex-shrink-0">×{c.count}</span>
                   </li>
                 ))}
               </ul>
             )}
           </div>
 
-          {/* Word Frequency */}
-          <div className="p-3 bg-gray-50 rounded border border-gray-100">
-            <h3 className="text-xs font-semibold text-gray-800 mb-2">Repeated Words</h3>
-            <div className="space-y-1">
+          <div className="p-3 bg-gray-50 border border-gray-100 rounded-lg">
+            <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Most Repeated Words</p>
+            <div className="space-y-1.5">
               {data.wordFrequencies.map((w, i) => (
-                <div key={i} className="flex items-center justify-between text-[11px]">
-                  <span className="text-gray-700">{w.word}</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-blue-400"
-                        style={{ width: `${(w.count / data.wordFrequencies[0].count) * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-gray-500 w-4 text-right">{w.count}</span>
+                <div key={i} className="flex items-center gap-2 text-[11px]">
+                  <span className="text-gray-700 w-20 truncate">{w.word}</span>
+                  <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-atticus-500 rounded-full"
+                      style={{ width: `${(w.count / data.wordFrequencies[0].count) * 100}%` }}
+                    />
                   </div>
+                  <span className="text-gray-400 w-6 text-right text-[10px]">{w.count}</span>
                 </div>
               ))}
             </div>

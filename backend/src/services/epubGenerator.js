@@ -1,4 +1,6 @@
-const EPub = require('epub-gen-memory').default;
+const epubModule = require('epub-gen-memory');
+// Handle both ESM default export and CJS function export
+const epub = typeof epubModule === 'function' ? epubModule : (epubModule.default || epubModule);
 
 // =============================================================================
 // EPUB Generator Service
@@ -40,7 +42,7 @@ async function generateEpub(docContent, metadata, theme, settings) {
     epubOptions.identifier = metadata.isbn;
   }
 
-  const epubBuffer = await new EPub(epubOptions).genEpub();
+  const epubBuffer = await epub(epubOptions);
 
   const safeTitle = (metadata.title || 'book')
     .replace(/[^a-zA-Z0-9\s]/g, '')

@@ -46,15 +46,18 @@ async function generatePdf(docContent, trimSize, theme, settings) {
 
     let stdout = '';
     let stderr = '';
+    let timer;
 
     pythonProcess.stdout.on('data', (data) => { stdout += data.toString(); });
     pythonProcess.stderr.on('data', (data) => { stderr += data.toString(); });
 
     pythonProcess.on('error', (err) => {
+      clearTimeout(timer);
       reject(new Error(`Failed to start PDF renderer: ${err.message}`));
     });
 
     pythonProcess.on('close', (code) => {
+      clearTimeout(timer);
       if (code !== 0) {
         console.error('WeasyPrint stderr:', stderr);
         reject(new Error(`PDF render failed (exit code ${code}): ${stderr.substring(0, 500)}`));
@@ -106,8 +109,8 @@ async function generatePdf(docContent, trimSize, theme, settings) {
     pythonProcess.stdin.write(input);
     pythonProcess.stdin.end();
 
-    // Timeout after 120 seconds
-    setTimeout(() => {
+    // Timeout after 120 seconds - cleared on process completion to prevent leak
+    timer = setTimeout(() => {
       pythonProcess.kill('SIGTERM');
       reject(new Error('PDF generation timed out after 120 seconds'));
     }, 120000);

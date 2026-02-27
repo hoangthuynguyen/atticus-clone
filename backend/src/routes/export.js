@@ -137,9 +137,11 @@ router.post('/docx', async (req, res) => {
     console.log(`[DOCX] Starting export for doc ${docId} by ${req.user.email}`);
 
     const HTMLtoDOCX = require('html-to-docx');
+    // html-to-docx fontSize is in half-points (22 = 11pt). Parse "11pt" → 11 → 22
+    const fontSizePt = parseFloat((theme || {}).fontSize) || 11;
     const buffer = await HTMLtoDOCX(docContent, null, {
       font: (theme || {}).fontFamily || 'Georgia',
-      fontSize: parseInt((theme || {}).fontSize) || 22,
+      fontSize: Math.round(fontSizePt * 2),
       table: { row: { cantSplit: true } },
       footer: true,
       pageNumber: true,

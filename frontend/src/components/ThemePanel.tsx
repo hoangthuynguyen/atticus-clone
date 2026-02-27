@@ -25,9 +25,8 @@ export function ThemePanel() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
+  const [status, setStatus] = useState<{ text: string; ok: boolean } | null>(null);
 
-  // Custom Theme State
   const [customTheme, setCustomTheme] = useState({
     name: 'Custom Theme',
     bodyFont: 'Georgia',
@@ -39,17 +38,15 @@ export function ThemePanel() {
     sceneBreakSymbol: '* * *',
   });
 
-  useEffect(() => {
-    fetchThemes();
-  }, []);
+  useEffect(() => { fetchThemes(); }, []);
 
   async function fetchThemes() {
     try {
-      const res = await fetch(`${API_URL} /themes/presets`);
+      const res = await fetch(`${API_URL}/themes/presets`);
       const data = await res.json();
       setThemes(data.themes || []);
     } catch {
-      setStatus('Failed to load themes. Check your connection.');
+      setStatus({ text: 'Failed to load themes. Using offline mode.', ok: false });
     } finally {
       setLoading(false);
     }
@@ -68,9 +65,9 @@ export function ThemePanel() {
         colorAccent: theme.colorAccent,
       });
       setSelectedId(theme.id);
-      setStatus(`Theme "${theme.name}" applied!`);
+      setStatus({ text: `Theme "${theme.name}" applied!`, ok: true });
     } catch (err) {
-      setStatus(`Error: ${err instanceof Error ? err.message : String(err)} `);
+      setStatus({ text: `Error: ${err instanceof Error ? err.message : String(err)}`, ok: false });
     } finally {
       setApplying(false);
     }
@@ -79,170 +76,228 @@ export function ThemePanel() {
   if (loading) {
     return (
       <div className="p-3 space-y-2">
-        <h2 className="text-sm font-semibold text-gray-800">Themes</h2>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-5 h-5 bg-atticus-100 rounded animate-pulse" />
+          <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
+        </div>
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-16 bg-gray-100 rounded animate-pulse" />
+          <div key={i} className="h-20 bg-gray-100 rounded-lg animate-pulse" />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="p-3 space-y-3 pb-20">
-      <div className="flex justify-between items-center">
-        <h2 className="text-sm font-semibold text-gray-800">Book Themes</h2>
-      </div>
-
-      <div className="flex gap-1">
-        <button
-          onClick={() => setTab('presets')}
-          className={`flex - 1 px - 2 py - 1.5 rounded text - [11px] font - medium transition - colors
-            ${tab === 'presets' ? 'bg-atticus-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'} `}
-        >
-          Preset Themes
-        </button>
-        <button
-          onClick={() => setTab('custom')}
-          className={`flex - 1 px - 2 py - 1.5 rounded text - [11px] font - medium transition - colors
-            ${tab === 'custom' ? 'bg-atticus-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'} `}
-        >
-          Custom Builder
-        </button>
-      </div>
-
-      {status && (
-        <p className={`text - [11px] p - 2 rounded ${status.startsWith('Error') ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'} `}>
-          {status}
-        </p>
-      )}
-
-      {tab === 'presets' && (
-        <div className="space-y-4">
-          <p className="text-[11px] text-gray-500">17 preset themes optimized for different genres</p>
-          <div className="space-y-2">
-            {themes.map((theme) => (
-              <button
-                key={theme.id}
-                onClick={() => handleApplyTheme(theme)}
-                disabled={applying}
-                className={`w - full p - 3 rounded - lg border text - left transition - all hover: shadow - sm disabled: opacity - 50
-              ${selectedId === theme.id
-                    ? 'border-atticus-500 bg-atticus-50 ring-1 ring-atticus-300'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
-                  } `}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-xs font-semibold text-gray-800">{theme.name}</p>
-                    <p className="text-[10px] text-gray-500 mt-0.5">{theme.genre}</p>
-                  </div>
-                  <div
-                    className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5"
-                    style={{ backgroundColor: theme.colorAccent }}
-                  />
-                </div>
-                <div className="mt-1.5 flex gap-3 text-[10px] text-gray-400">
-                  <span>{theme.bodyFont}</span>
-                  <span>{theme.fontSize}</span>
-                  <span>{theme.lineHeight}x</span>
-                  {theme.dropCaps && <span>Drop Caps</span>}
-                </div>
-                {/* Mini preview */}
-                <div
-                  className="mt-2 p-2 bg-gray-50 rounded text-[10px] leading-relaxed"
-                  style={{ fontFamily: `"${theme.bodyFont}", serif` }}
-                >
-                  <p style={{ color: theme.colorAccent, fontWeight: 'bold', fontSize: '12px', textAlign: 'center' }}>
-                    Chapter One
-                  </p>
-                  <p className="mt-1 text-gray-600">
-                    The quick brown fox jumps over the lazy dog. Lorem ipsum dolor sit amet...
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {tab === 'custom' && (
-        <div className="space-y-4">
-          <div>
-            <label className="text-[10px] font-semibold text-gray-600 uppercase">Body Font</label>
-            <select
-              value={customTheme.bodyFont}
-              onChange={e => setCustomTheme({ ...customTheme, bodyFont: e.target.value })}
-              className="w-full mt-1 p-2 bg-gray-50 border rounded text-xs"
-            >
-              {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
-            </select>
-          </div>
-
-          <div>
-            <label className="text-[10px] font-semibold text-gray-600 uppercase">Heading Font</label>
-            <select
-              value={customTheme.headingFont}
-              onChange={e => setCustomTheme({ ...customTheme, headingFont: e.target.value })}
-              className="w-full mt-1 p-2 bg-gray-50 border rounded text-xs"
-            >
-              {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-[10px] font-semibold text-gray-600 uppercase">Size</label>
-              <select
-                value={customTheme.fontSize}
-                onChange={e => setCustomTheme({ ...customTheme, fontSize: e.target.value })}
-                className="w-full mt-1 p-2 bg-gray-50 border rounded text-xs"
-              >
-                {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-[10px] font-semibold text-gray-600 uppercase">Spacing</label>
-              <select
-                value={customTheme.lineHeight}
-                onChange={e => setCustomTheme({ ...customTheme, lineHeight: Number(e.target.value) })}
-                className="w-full mt-1 p-2 bg-gray-50 border rounded text-xs"
-              >
-                <option value={1.2}>1.2x</option>
-                <option value={1.4}>1.4x</option>
-                <option value={1.5}>1.5x</option>
-                <option value={1.6}>1.6x</option>
-                <option value={1.8}>1.8x</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-[10px] font-semibold text-gray-600 uppercase">Accent Color</label>
-            <div className="flex gap-2 mt-1">
-              <input
-                type="color"
-                value={customTheme.colorAccent}
-                onChange={e => setCustomTheme({ ...customTheme, colorAccent: e.target.value })}
-                className="h-8 w-12 rounded cursor-pointer"
-              />
-              <input
-                type="text"
-                value={customTheme.colorAccent}
-                onChange={e => setCustomTheme({ ...customTheme, colorAccent: e.target.value })}
-                className="flex-1 p-2 bg-gray-50 border rounded text-xs"
-              />
-            </div>
-          </div>
-
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="px-3 pt-3 pb-2 border-b border-gray-100">
+        <h2 className="text-sm font-semibold text-gray-800 mb-2">Book Themes</h2>
+        <div className="flex gap-1 bg-gray-100 p-0.5 rounded-lg">
           <button
-            onClick={() => handleApplyTheme(customTheme as any)}
-            disabled={applying}
-            className="w-full py-2.5 bg-atticus-600 text-white rounded-lg text-sm font-medium hover:bg-atticus-700 disabled:opacity-50 transition-colors"
+            onClick={() => setTab('presets')}
+            className={`flex-1 px-2 py-1.5 rounded-md text-[11px] font-medium transition-colors
+              ${tab === 'presets' ? 'bg-white text-atticus-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            Apply Custom Theme
+            Preset Themes
+          </button>
+          <button
+            onClick={() => setTab('custom')}
+            className={`flex-1 px-2 py-1.5 rounded-md text-[11px] font-medium transition-colors
+              ${tab === 'custom' ? 'bg-white text-atticus-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            Custom Builder
           </button>
         </div>
+      </div>
+
+      {/* Status */}
+      {status && (
+        <div className={`mx-3 mt-2 px-2 py-1.5 rounded-md text-[11px] flex items-center gap-1.5
+          ${status.ok ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+          <span>{status.ok ? '✓' : '✕'}</span>
+          <span>{status.text}</span>
+        </div>
       )}
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 pb-20">
+        {tab === 'presets' && (
+          <>
+            {themes.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-xs text-gray-500">No themes loaded.</p>
+                <p className="text-[11px] text-gray-400 mt-1">Check your API connection.</p>
+                <button onClick={fetchThemes} className="mt-3 text-xs text-atticus-600 hover:underline">
+                  Retry
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className="text-[11px] text-gray-400">{themes.length} preset themes for different genres</p>
+                <div className="space-y-2">
+                  {themes.map((theme) => (
+                    <button
+                      key={theme.id}
+                      onClick={() => handleApplyTheme(theme)}
+                      disabled={applying}
+                      className={`w-full p-3 rounded-lg border text-left transition-all hover:shadow-sm disabled:opacity-50 group
+                        ${selectedId === theme.id
+                          ? 'border-atticus-400 bg-atticus-50 ring-1 ring-atticus-200'
+                          : 'border-gray-200 bg-white hover:border-atticus-200 hover:bg-blue-50/30'
+                        }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs font-semibold text-gray-800 truncate">{theme.name}</p>
+                            {selectedId === theme.id && (
+                              <span className="text-[9px] px-1.5 py-0.5 bg-atticus-100 text-atticus-700 rounded-full font-medium flex-shrink-0">
+                                Applied
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-gray-400 mt-0.5">{theme.genre}</p>
+                        </div>
+                        <div
+                          className="w-4 h-4 rounded-full flex-shrink-0 mt-0.5 ring-1 ring-black/10"
+                          style={{ backgroundColor: theme.colorAccent }}
+                        />
+                      </div>
+
+                      {/* Font info */}
+                      <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-gray-400">
+                        <span>{theme.bodyFont}</span>
+                        <span>{theme.fontSize}</span>
+                        <span>{theme.lineHeight}× spacing</span>
+                        {theme.dropCaps && <span className="text-atticus-500">Drop caps</span>}
+                      </div>
+
+                      {/* Mini preview */}
+                      <div
+                        className="mt-2 p-2 bg-gray-50 rounded text-[10px] leading-relaxed border border-gray-100"
+                        style={{ fontFamily: `"${theme.bodyFont}", serif` }}
+                      >
+                        <p style={{ color: theme.colorAccent, fontWeight: 700, fontSize: '11px', textAlign: 'center', letterSpacing: '0.05em' }}>
+                          Chapter One
+                        </p>
+                        <p className="mt-1 text-gray-600 line-clamp-2">
+                          The morning sun cast long shadows as she walked down the cobblestone path...
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        )}
+
+        {tab === 'custom' && (
+          <div className="space-y-3">
+            {/* Live Preview */}
+            <div
+              className="p-3 rounded-lg border border-gray-200"
+              style={{
+                fontFamily: `"${customTheme.bodyFont}", serif`,
+                lineHeight: customTheme.lineHeight,
+              }}
+            >
+              <p style={{ color: customTheme.colorAccent, fontFamily: `"${customTheme.headingFont}", serif`, fontWeight: 700, textAlign: 'center', fontSize: '13px', marginBottom: '6px' }}>
+                Chapter One
+              </p>
+              <p className="text-gray-600 text-[11px]">
+                The quick brown fox jumps over the lazy dog. In the beginning there was darkness and silence across the land.
+              </p>
+            </div>
+
+            {/* Body Font */}
+            <div>
+              <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Body Font</label>
+              <select
+                value={customTheme.bodyFont}
+                onChange={e => setCustomTheme({ ...customTheme, bodyFont: e.target.value })}
+                className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-atticus-400"
+              >
+                {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+            </div>
+
+            {/* Heading Font */}
+            <div>
+              <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Heading Font</label>
+              <select
+                value={customTheme.headingFont}
+                onChange={e => setCustomTheme({ ...customTheme, headingFont: e.target.value })}
+                className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-atticus-400"
+              >
+                {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+            </div>
+
+            {/* Size + Spacing */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Size</label>
+                <select
+                  value={customTheme.fontSize}
+                  onChange={e => setCustomTheme({ ...customTheme, fontSize: e.target.value })}
+                  className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-atticus-400"
+                >
+                  {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Spacing</label>
+                <select
+                  value={customTheme.lineHeight}
+                  onChange={e => setCustomTheme({ ...customTheme, lineHeight: Number(e.target.value) })}
+                  className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-atticus-400"
+                >
+                  <option value={1.2}>1.2×</option>
+                  <option value={1.4}>1.4×</option>
+                  <option value={1.5}>1.5×</option>
+                  <option value={1.6}>1.6×</option>
+                  <option value={1.8}>1.8×</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Accent Color */}
+            <div>
+              <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Accent Color</label>
+              <div className="flex gap-2 mt-1 items-center">
+                <input
+                  type="color"
+                  value={customTheme.colorAccent}
+                  onChange={e => setCustomTheme({ ...customTheme, colorAccent: e.target.value })}
+                  className="h-8 w-10 rounded cursor-pointer border border-gray-200"
+                />
+                <input
+                  type="text"
+                  value={customTheme.colorAccent}
+                  onChange={e => setCustomTheme({ ...customTheme, colorAccent: e.target.value })}
+                  className="flex-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs font-mono focus:outline-none focus:ring-1 focus:ring-atticus-400"
+                  placeholder="#333333"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={() => handleApplyTheme(customTheme as ThemePresetI)}
+              disabled={applying}
+              className="w-full py-2.5 bg-atticus-600 text-white rounded-lg text-sm font-medium
+                hover:bg-atticus-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+            >
+              {applying ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Applying...
+                </>
+              ) : 'Apply to Document'}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
