@@ -8,7 +8,7 @@
 FROM node:20-alpine AS node-builder
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci --production --ignore-scripts && npm cache clean --force
+RUN npm install --production --ignore-scripts && npm cache clean --force
 
 # Stage 2: Production runtime (Python + Node.js)
 FROM python:3.11-slim AS production
