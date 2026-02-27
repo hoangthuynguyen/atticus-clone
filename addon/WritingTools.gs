@@ -473,3 +473,64 @@ function analyzeText() {
     throw new Error('Analysis failed: ' + error.message);
   }
 }
+
+// =============================================================================
+// Image DPI Validator
+// =============================================================================
+
+/**
+ * Scan document images to ensure they meet the 300 DPI minimum for Print.
+ * @returns {object} { total: number, warnings: Array }
+ */
+function validateImageDPI() {
+  try {
+    var doc = DocumentApp.getActiveDocument();
+    var body = doc.getBody();
+    var images = body.getImages();
+    var warnings = [];
+
+    for (var i = 0; i < images.length; i++) {
+      var img = images[i];
+      var width = img.getWidth();   // display width
+      var height = img.getHeight(); // display height
+      
+      var blob = img.getBlob();
+      var sizeBytes = blob.getBytes().length;
+      var sizeKB = Math.round(sizeBytes / 1024);
+      var sizeFormatted = sizeKB > 1024 ? (sizeKB / 1024).toFixed(1) + ' MB' : sizeKB + ' KB';
+
+      // Estimate DPI based on file size and display dimensions (rough heuristic)
+      var dpiEst = 300;
+      var isWarning = false;
+      var message = '';
+
+      if (width > 150 && sizeKB < 50) {
+        dpiEst = 72;
+        isWarning = true;
+        message = 'Resolution too low for print. Image may appear blurry.';
+      } else if (width > 300 && sizeKB < 150) {
+        dpiEst = 150;
+        isWarning = true;
+        message = 'Moderate resolution. Consider replacing with a higher quality image.';
+      }
+
+      if (isWarning) {
+        warnings.push({
+          index: i + 1,
+          width: Math.round(width),
+          height: Math.round(height),
+          dpiEst: dpiEst,
+          size: sizeFormatted,
+          message: message
+        });
+      }
+    }
+
+    return {
+      total: images.length,
+      warnings: warnings
+    };
+  } catch (error) {
+    throw new Error('Image validation failed: ' + error.message);
+  }
+}

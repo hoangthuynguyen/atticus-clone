@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { callGas } from '../hooks/useGasBridge';
 
-const FONTS = ['Georgia', 'EB Garamond', 'Merriweather', 'Lora', 'PT Serif', 'Crimson Text', 'Roboto', 'Open Sans', 'Lato'];
+const FONTS = ['Georgia', 'EB Garamond', 'Merriweather', 'Lora', 'PT Serif', 'Crimson Text', 'Roboto', 'Open Sans', 'Lato', 'Cinzel', 'Great Vibes', 'Oswald', 'Montserrat', 'Playfair Display'];
 const SIZES = ['10pt', '10.5pt', '11pt', '11.5pt', '12pt', '13pt', '14pt'];
 
 interface ThemePresetI {

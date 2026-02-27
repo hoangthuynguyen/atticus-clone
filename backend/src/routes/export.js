@@ -183,6 +183,136 @@ router.post('/docx', async (req, res) => {
 });
 
 // =============================================================================
+// POST /export/txt
+// =============================================================================
+
+router.post('/txt', async (req, res) => {
+  try {
+    const { docContent, docId, metadata } = req.body;
+    if (!docContent) {
+      return res.status(400).json({ error: 'docContent is required', code: 'MISSING_CONTENT' });
+    }
+
+    console.log(`[TXT] Starting export for doc ${docId} by ${req.user.email}`);
+
+    const { convert } = require('html-to-text');
+    const textContent = convert(docContent, {
+      wordwrap: 130
+    });
+
+    const filename = `export_${Date.now()}.txt`;
+    const buffer = Buffer.from(textContent, 'utf-8');
+
+    const { signedUrl, key } = await uploadExportFile(
+      buffer,
+      filename,
+      'text/plain',
+      req.user.id
+    );
+
+    await saveExportHistory(
+      req.user.id,
+      docId || 'unknown',
+      'txt',
+      signedUrl,
+      buffer.length,
+      { r2Key: key }
+    );
+
+    console.log(`[TXT] Export complete: ${filename} (${formatBytes(buffer.length)})`);
+
+    res.json({
+      downloadUrl: signedUrl,
+      filename,
+      size: buffer.length,
+      sizeFormatted: formatBytes(buffer.length),
+    });
+  } catch (error) {
+    console.error('[TXT] Export failed:', error);
+    res.status(500).json({
+      error: 'TXT export failed',
+      code: 'TXT_EXPORT_FAILED',
+      details: error.message,
+    });
+  }
+});
+
+// =============================================================================
+// POST /export/html
+// =============================================================================
+
+router.post('/html', async (req, res) => {
+  try {
+    const { docContent, docId, metadata, theme } = req.body;
+    if (!docContent) {
+      return res.status(400).json({ error: 'docContent is required', code: 'MISSING_CONTENT' });
+    }
+
+    console.log(`[HTML] Starting export for doc ${docId} by ${req.user.email}`);
+
+    const title = (metadata || {}).title || 'Document Export';
+
+    // Add some basic styling so it doesn't look completely terrible
+    const htmlDocument = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+        body { font-family: ${(theme || {}).fontFamily || 'Georgia, serif'}; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }
+        h1, h2, h3 { color: #111; }
+        img { max-width: 100%; height: auto; }
+        .callout-box { padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+        .text-msg-container { margin: 1rem 0; }
+        .text-msg { padding: 0.75rem 1rem; border-radius: 1rem; max-width: 70%; margin-bottom: 0.5rem; }
+        .text-msg-sent { background-color: #dcf8c6; margin-left: auto; border-bottom-right-radius: 0.25rem; }
+        .text-msg-received { background-color: #f1f1f1; border-bottom-left-radius: 0.25rem; }
+    </style>
+</head>
+<body>
+    ${docContent}
+</body>
+</html>`;
+
+    const filename = `export_${Date.now()}.html`;
+    const buffer = Buffer.from(htmlDocument, 'utf-8');
+
+    const { signedUrl, key } = await uploadExportFile(
+      buffer,
+      filename,
+      'text/html',
+      req.user.id
+    );
+
+    await saveExportHistory(
+      req.user.id,
+      docId || 'unknown',
+      'html',
+      signedUrl,
+      buffer.length,
+      { r2Key: key }
+    );
+
+    console.log(`[HTML] Export complete: ${filename} (${formatBytes(buffer.length)})`);
+
+    res.json({
+      downloadUrl: signedUrl,
+      filename,
+      size: buffer.length,
+      sizeFormatted: formatBytes(buffer.length),
+    });
+  } catch (error) {
+    console.error('[HTML] Export failed:', error);
+    res.status(500).json({
+      error: 'HTML export failed',
+      code: 'HTML_EXPORT_FAILED',
+      details: error.message,
+    });
+  }
+});
+
+// =============================================================================
 // GET /export/trim-sizes
 // =============================================================================
 

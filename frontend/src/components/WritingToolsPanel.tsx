@@ -21,14 +21,15 @@ interface StreakData {
   last30Days: Array<{ date: string; words: number; wrote: boolean }>;
 }
 
-type Section = 'wordcount' | 'sprint' | 'streak' | 'quotes' | 'analyze';
+type Section = 'wordcount' | 'sprint' | 'streak' | 'quotes' | 'analyze' | 'dpi';
 
 const SECTIONS: { id: Section; label: string; icon: string }[] = [
-  { id: 'wordcount', label: 'Words',   icon: '#' },
-  { id: 'sprint',    label: 'Sprint',  icon: '⏱' },
-  { id: 'streak',    label: 'Streak',  icon: '🔥' },
-  { id: 'quotes',    label: 'Quotes',  icon: '"' },
-  { id: 'analyze',   label: 'Analyze', icon: '≡' },
+  { id: 'wordcount', label: 'Words', icon: '#' },
+  { id: 'sprint', label: 'Sprint', icon: '⏱' },
+  { id: 'streak', label: 'Streak', icon: '🔥' },
+  { id: 'quotes', label: 'Quotes', icon: '"' },
+  { id: 'analyze', label: 'Analyze', icon: '≡' },
+  { id: 'dpi', label: 'Images', icon: '🖼' },
 ];
 
 export function WritingToolsPanel() {
@@ -58,10 +59,11 @@ export function WritingToolsPanel() {
 
       <div className="flex-1 overflow-y-auto p-3 pb-20">
         {activeSection === 'wordcount' && <WordCountSection />}
-        {activeSection === 'sprint'    && <SprintTimerSection />}
-        {activeSection === 'streak'    && <StreakSection />}
-        {activeSection === 'quotes'    && <SmartQuotesSection />}
-        {activeSection === 'analyze'   && <AnalyzeSection />}
+        {activeSection === 'sprint' && <SprintTimerSection />}
+        {activeSection === 'streak' && <StreakSection />}
+        {activeSection === 'quotes' && <SmartQuotesSection />}
+        {activeSection === 'analyze' && <AnalyzeSection />}
+        {activeSection === 'dpi' && <DpiValidatorSection />}
       </div>
     </div>
   );
@@ -72,8 +74,8 @@ export function WritingToolsPanel() {
 // =============================================================================
 
 function WordCountSection() {
-  const [data, setData]       = useState<WordCountResult | null>(null);
-  const [daily, setDaily]     = useState<DailyProgress | null>(null);
+  const [data, setData] = useState<WordCountResult | null>(null);
+  const [daily, setDaily] = useState<DailyProgress | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function refresh() {
@@ -109,16 +111,16 @@ function WordCountSection() {
 
       {loading && !data && (
         <div className="grid grid-cols-2 gap-2">
-          {[1,2,3,4].map(i => <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />)}
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />)}
         </div>
       )}
 
       {data && (
         <div className="grid grid-cols-2 gap-2">
-          <StatCard label="Words"      value={data.total.toLocaleString()} accent />
+          <StatCard label="Words" value={data.total.toLocaleString()} accent />
           <StatCard label="Characters" value={data.characters.toLocaleString()} />
           <StatCard label="Paragraphs" value={data.paragraphs.toLocaleString()} />
-          <StatCard label="Chapters"   value={String(data.chapters)} />
+          <StatCard label="Chapters" value={String(data.chapters)} />
         </div>
       )}
 
@@ -161,9 +163,9 @@ function StatCard({ label, value, accent }: { label: string; value: string; acce
 // =============================================================================
 
 function SprintTimerSection() {
-  const [duration, setDuration]   = useState(25);
+  const [duration, setDuration] = useState(25);
   const [remaining, setRemaining] = useState(25 * 60);
-  const [running, setRunning]     = useState(false);
+  const [running, setRunning] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const isComplete = remaining === 0;
   const progress = ((duration * 60 - remaining) / (duration * 60)) * 100;
@@ -269,7 +271,7 @@ function SprintTimerSection() {
 // =============================================================================
 
 function StreakSection() {
-  const [data, setData]       = useState<StreakData | null>(null);
+  const [data, setData] = useState<StreakData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { loadStreak(); }, []);
@@ -288,7 +290,7 @@ function StreakSection() {
   if (loading) return (
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-2">
-        {[1,2,3].map(i => <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />)}
+        {[1, 2, 3].map(i => <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />)}
       </div>
       <div className="h-24 bg-gray-100 rounded-lg animate-pulse" />
     </div>
@@ -306,7 +308,7 @@ function StreakSection() {
       <div className="grid grid-cols-3 gap-2">
         <StreakCard label="Current" value={data.currentStreak} highlight />
         <StreakCard label="Longest" value={data.longestStreak} />
-        <StreakCard label="Total"   value={data.totalDays} />
+        <StreakCard label="Total" value={data.totalDays} />
       </div>
 
       <div className="p-3 bg-gray-50 border border-gray-100 rounded-lg">
@@ -354,8 +356,8 @@ function SmartQuotesSection() {
     totalIssues: number;
   } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [fixing, setFixing]   = useState(false);
-  const [status, setStatus]   = useState<string | null>(null);
+  const [fixing, setFixing] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
 
   async function handleScan() {
     setLoading(true);
@@ -446,9 +448,9 @@ interface AnalysisResult {
 }
 
 function AnalyzeSection() {
-  const [data, setData]       = useState<AnalysisResult | null>(null);
+  const [data, setData] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleAnalyze() {
     setLoading(true);
@@ -535,6 +537,83 @@ function AnalyzeSection() {
               ))}
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// Image DPI Validator
+// =============================================================================
+
+interface DpiResult {
+  total: number;
+  warnings: Array<{ index: number; width: number; height: number; dpiEst: number; size: string; message: string }>;
+}
+
+function DpiValidatorSection() {
+  const [data, setData] = useState<DpiResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleScan() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await callGas<DpiResult>('validateImageDPI');
+      setData(res);
+    } catch (err) {
+      setError(`Validation failed: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-[11px] text-gray-500">Scan document images to ensure they meet the 300 DPI minimum for Print.</p>
+
+      <button
+        onClick={handleScan}
+        disabled={loading}
+        className="w-full py-2.5 bg-atticus-600 text-white rounded-lg text-xs font-semibold
+          hover:bg-atticus-700 disabled:opacity-50 transition-colors"
+      >
+        {loading ? 'Scanning Images…' : 'Validate Print Quality'}
+      </button>
+
+      {error && (
+        <p className="text-[11px] text-red-600 p-2 bg-red-50 rounded-md border border-red-200">{error}</p>
+      )}
+
+      {data && (
+        <div className="space-y-3">
+          {data.warnings.length === 0 ? (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-center">
+              <p className="text-xl mb-1">✓</p>
+              <p className="text-xs text-green-700 font-semibold">Perfect!</p>
+              <p className="text-[11px] text-green-600 mt-1">All {data.total} images are high quality.</p>
+            </div>
+          ) : (
+            <div className="p-3 bg-red-50 border border-red-100 rounded-lg">
+              <p className="text-[10px] font-semibold text-red-700 uppercase tracking-wide mb-2">
+                Warnings ({data.warnings.length} of {data.total})
+              </p>
+              <ul className="space-y-2">
+                {data.warnings.map((w, i) => (
+                  <li key={i} className="flex gap-2 text-[11px] bg-white p-2 border border-red-100 rounded-md">
+                    <span className="text-red-500 font-bold mt-0.5">⚠</span>
+                    <div>
+                      <p className="font-semibold text-gray-800">Image #{w.index}</p>
+                      <p className="text-gray-600">Est. {Math.round(w.dpiEst)} DPI ({w.width}x{w.height}px, {w.size})</p>
+                      <p className="text-red-600 mt-0.5">{w.message}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>

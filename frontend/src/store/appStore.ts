@@ -7,8 +7,8 @@ interface AppState {
   setActiveTab: (tab: Tab) => void;
 
   // Export state
-  exportFormat: 'epub' | 'pdf' | 'docx';
-  setExportFormat: (format: 'epub' | 'pdf' | 'docx') => void;
+  exportFormats: string[];
+  toggleExportFormat: (format: string) => void;
   trimSize: string;
   setTrimSize: (size: string) => void;
   isExporting: boolean;
@@ -33,8 +33,12 @@ export const useAppStore = create<AppState>((set) => ({
   activeTab: 'export',
   setActiveTab: (tab) => set({ activeTab: tab }),
 
-  exportFormat: 'epub',
-  setExportFormat: (format) => set({ exportFormat: format }),
+  exportFormats: ['epub', 'txt', 'html'],
+  toggleExportFormat: (format) => set((state) => ({
+    exportFormats: state.exportFormats.includes(format)
+      ? state.exportFormats.filter((f) => f !== format)
+      : [...state.exportFormats, format],
+  })),
   trimSize: '6x9',
   setTrimSize: (size) => set({ trimSize: size }),
   isExporting: false,

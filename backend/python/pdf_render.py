@@ -41,6 +41,9 @@ def render_pdf(html_content, trim_size, theme, settings):
     orphan_control = settings.get("orphanControl", True)
     drop_caps = settings.get("dropCaps", False)
     scene_break = settings.get("sceneBreakSymbol", "* * *")
+    running_header = settings.get("runningHeader", "none")
+    author = theme.get("author", "")
+    title_book = theme.get("title", "")
 
     # =========================================================================
     # Build print CSS
@@ -56,33 +59,41 @@ def render_pdf(html_content, trim_size, theme, settings):
     """
 
     if mirror:
+        left_header = author.upper() if running_header == 'author_title' and author else ''
+        right_header = title_book.upper() if running_header == 'author_title' and title_book else ''
+
         page_css += f"""
     @page :left {{
         margin-left: {margin_outer};
         margin-right: {margin_inner};
         @bottom-left {{ content: counter(page); font-size: 9pt; color: #999; }}
+        @top-center {{ content: "{left_header}"; font-size: 8pt; color: #666; font-family: '{font_family}', serif; letter-spacing: 0.1em; }}
     }}
     @page :right {{
         margin-left: {margin_inner};
         margin-right: {margin_outer};
         @bottom-right {{ content: counter(page); font-size: 9pt; color: #999; }}
+        @top-center {{ content: "{right_header}"; font-size: 8pt; color: #666; font-family: '{font_family}', serif; letter-spacing: 0.1em; }}
     }}
     """
     else:
+        center_header = (author.upper() + " / " + title_book.upper()).strip(" / ") if running_header == 'author_title' and (author or title_book) else ''
         page_css += f"""
     @page {{
         margin-left: {margin_inner};
         margin-right: {margin_outer};
         @bottom-center {{ content: counter(page); font-size: 9pt; color: #999; }}
+        @top-center {{ content: "{center_header}"; font-size: 8pt; color: #666; font-family: '{font_family}', serif; letter-spacing: 0.1em; }}
     }}
     """
 
-    # First page - no page number
+    # First page - no page number nor running header
     page_css += """
     @page :first {
         @bottom-center { content: none; }
         @bottom-left { content: none; }
         @bottom-right { content: none; }
+        @top-center { content: none; }
     }
     """
 
@@ -108,6 +119,11 @@ def render_pdf(html_content, trim_size, theme, settings):
         text-indent: 0;
     }}
 
+    /* Hide running header on chapters starting pages */
+    @page chapter {{
+        @top-center {{ content: none; }}
+    }}
+
     /* === Headings === */
     h1 {{
         font-family: '{heading_font}', serif;
@@ -118,6 +134,7 @@ def render_pdf(html_content, trim_size, theme, settings):
         color: {color_accent};
         page-break-before: always;
         page-break-after: avoid;
+        page: chapter;
     }}
 
     h1:first-of-type {{

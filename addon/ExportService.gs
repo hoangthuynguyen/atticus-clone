@@ -24,7 +24,20 @@ function getDocumentContent() {
       return JSON.parse(cached);
     }
 
-    var html = convertBodyToHtml_(body);
+    // Process Footnotes
+    var footnoteHtml = '';
+    var footnotes = doc.getFootnotes();
+    if (footnotes && footnotes.length > 0) {
+      footnoteHtml += '<div class="footnotes-section"><h2>Notes</h2><ol>';
+      for (var f = 0; f < footnotes.length; f++) {
+        var fn = footnotes[f];
+        var contentHtml = convertBodyToHtml_(fn.getFootnoteContents());
+        footnoteHtml += '<li id="fn-' + (f + 1) + '">' + contentHtml + '</li>';
+      }
+      footnoteHtml += '</ol></div>';
+    }
+
+    var html = convertBodyToHtml_(body) + footnoteHtml;
     var headings = extractHeadings_(body);
 
     var result = {
@@ -103,8 +116,17 @@ function callExportAPI(endpoint, payload) {
 function exportEpub(settings) {
   try {
     var content = getDocumentContent();
+    var htmlContent = content.html;
+    if (settings.platform && settings.platform !== 'generic') {
+      var storeLink = 'https://books2read.com/u/example';
+      if (settings.platform === 'amazon') storeLink = 'https://amazon.com/author/example';
+      if (settings.platform === 'apple') storeLink = 'https://books.apple.com/author/example';
+      if (settings.platform === 'kobo') storeLink = 'https://kobo.com/author/example';
+      htmlContent = htmlContent.replace(/\[Store Link\]/gi, storeLink);
+    }
+
     var result = callExportAPI('/export/epub', {
-      docContent: content.html,
+      docContent: htmlContent,
       docId: content.metadata.id,
       metadata: Object.assign({}, content.metadata, settings.metadataOverrides || {}),
       theme: settings.theme || {},
@@ -129,8 +151,17 @@ function exportEpub(settings) {
 function exportPdf(settings) {
   try {
     var content = getDocumentContent();
+    var htmlContent = content.html;
+    if (settings.platform && settings.platform !== 'generic') {
+      var storeLink = 'https://books2read.com/u/example';
+      if (settings.platform === 'amazon') storeLink = 'https://amazon.com/author/example';
+      if (settings.platform === 'apple') storeLink = 'https://books.apple.com/author/example';
+      if (settings.platform === 'kobo') storeLink = 'https://kobo.com/author/example';
+      htmlContent = htmlContent.replace(/\[Store Link\]/gi, storeLink);
+    }
+    
     var result = callExportAPI('/export/pdf', {
-      docContent: content.html,
+      docContent: htmlContent,
       docId: content.metadata.id,
       metadata: Object.assign({}, content.metadata, settings.metadataOverrides || {}),
       trimSize: settings.trimSize || '6x9',
@@ -140,6 +171,7 @@ function exportPdf(settings) {
         mirrorMargins: settings.mirrorMargins || false,
         dropCaps: settings.dropCaps || false,
         sceneBreakSymbol: settings.sceneBreakSymbol || '* * *',
+        runningHeader: settings.runningHeader || 'none', // Supported: 'author_title', 'chapter_title', 'none'
       },
     });
     return result;
@@ -165,6 +197,46 @@ function exportDocx(settings) {
     return result;
   } catch (error) {
     throw new Error('DOCX export failed: ' + error.message);
+  }
+}
+
+/**
+ * Export document as TXT.
+ * @param {object} settings - Export settings
+ * @returns {object} { downloadUrl, filename, size }
+ */
+function exportTxt(settings) {
+  try {
+    var content = getDocumentContent();
+    var result = callExportAPI('/export/txt', {
+      docContent: content.html,
+      docId: content.metadata.id,
+      metadata: Object.assign({}, content.metadata, settings.metadataOverrides || {}),
+      theme: settings.theme || {},
+    });
+    return result;
+  } catch (error) {
+    throw new Error('TXT export failed: ' + error.message);
+  }
+}
+
+/**
+ * Export document as HTML.
+ * @param {object} settings - Export settings
+ * @returns {object} { downloadUrl, filename, size }
+ */
+function exportHtml(settings) {
+  try {
+    var content = getDocumentContent();
+    var result = callExportAPI('/export/html', {
+      docContent: content.html,
+      docId: content.metadata.id,
+      metadata: Object.assign({}, content.metadata, settings.metadataOverrides || {}),
+      theme: settings.theme || {},
+    });
+    return result;
+  } catch (error) {
+    throw new Error('HTML export failed: ' + error.message);
   }
 }
 
