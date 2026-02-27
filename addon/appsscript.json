@@ -1,7 +1,7 @@
 {
   "timeZone": "America/New_York",
   "dependencies": {
-    "advancedServices": [
+    "enabledAdvancedServices": [
       {
         "userSymbol": "Drive",
         "serviceId": "drive",
