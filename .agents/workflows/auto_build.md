@@ -14,19 +14,19 @@ description: Build và deploy toàn bộ Bookify tự động không cần appro
 // turbo
 1. Kiểm tra git status:
 ```bash
-cd /Users/nguyenhoang/Downloads/Bookify\ clone && git status && git log --oneline -3
+cd /Users/nguyenhoang/Downloads/Bookify && git status && git log --oneline -3
 ```
 
 // turbo
 2. Cài frontend dependencies:
 ```bash
-cd /Users/nguyenhoang/Downloads/Bookify\ clone/frontend && npm install 2>&1 | tail -3 && echo "=== FRONTEND DEPS OK ==="
+cd /Users/nguyenhoang/Downloads/Bookify/frontend && npm install 2>&1 | tail -3 && echo "=== FRONTEND DEPS OK ==="
 ```
 
 // turbo
 3. Cài backend dependencies:
 ```bash
-cd /Users/nguyenhoang/Downloads/Bookify\ clone/backend && npm install 2>&1 | tail -3 && echo "=== BACKEND DEPS OK ==="
+cd /Users/nguyenhoang/Downloads/Bookify/backend && npm install 2>&1 | tail -3 && echo "=== BACKEND DEPS OK ==="
 ```
 
 ---
@@ -36,7 +36,7 @@ cd /Users/nguyenhoang/Downloads/Bookify\ clone/backend && npm install 2>&1 | tai
 // turbo
 4. Chạy TypeScript check:
 ```bash
-cd /Users/nguyenhoang/Downloads/Bookify\ clone/frontend && npx tsc --noEmit 2>&1 && echo "=== TS OK ===" || echo "=== TS ERRORS - ANTIGRAVITY SẼ TỰ FIX ==="
+cd /Users/nguyenhoang/Downloads/Bookify/frontend && npx tsc --noEmit 2>&1 && echo "=== TS OK ===" || echo "=== TS ERRORS - ANTIGRAVITY SẼ TỰ FIX ==="
 ```
 
 ---
@@ -46,7 +46,7 @@ cd /Users/nguyenhoang/Downloads/Bookify\ clone/frontend && npx tsc --noEmit 2>&1
 // turbo
 5. Build production bundle:
 ```bash
-cd /Users/nguyenhoang/Downloads/Bookify\ clone/frontend && npm run build 2>&1 && echo "=== BUILD OK ===" || echo "=== BUILD FAILED ==="
+cd /Users/nguyenhoang/Downloads/Bookify/frontend && npm run build 2>&1 && echo "=== BUILD OK ===" || echo "=== BUILD FAILED ==="
 ```
 
 ---
@@ -56,13 +56,13 @@ cd /Users/nguyenhoang/Downloads/Bookify\ clone/frontend && npm run build 2>&1 &&
 // turbo
 6. Kiểm tra backend syntax:
 ```bash
-cd /Users/nguyenhoang/Downloads/Bookify\ clone/backend && node --check src/server.js 2>&1 && echo "=== BACKEND SYNTAX OK ===" || echo "=== BACKEND SYNTAX ERROR ==="
+cd /Users/nguyenhoang/Downloads/Bookify/backend && node --check src/server.js 2>&1 && echo "=== BACKEND SYNTAX OK ===" || echo "=== BACKEND SYNTAX ERROR ==="
 ```
 
 // turbo
 7. Chạy backend tests:
 ```bash
-cd /Users/nguyenhoang/Downloads/Bookify\ clone/backend && npm test 2>&1 | tail -5 && echo "=== TESTS DONE ==="
+cd /Users/nguyenhoang/Downloads/Bookify/backend && npm test 2>&1 | tail -5 && echo "=== TESTS DONE ==="
 ```
 
 ---
@@ -72,19 +72,19 @@ cd /Users/nguyenhoang/Downloads/Bookify\ clone/backend && npm test 2>&1 | tail -
 // turbo
 8. Stage tất cả thay đổi:
 ```bash
-cd /Users/nguyenhoang/Downloads/Bookify\ clone && git add -A && git diff --staged --stat
+cd /Users/nguyenhoang/Downloads/Bookify && git add -A && git diff --staged --stat
 ```
 
 // turbo
 9. Commit với timestamp:
 ```bash
-cd /Users/nguyenhoang/Downloads/Bookify\ clone && git diff --staged --quiet || git commit -m "auto: build & fixes $(date '+%Y-%m-%d %H:%M')" && echo "=== COMMITTED ==="
+cd /Users/nguyenhoang/Downloads/Bookify && git diff --staged --quiet || git commit -m "auto: build & fixes $(date '+%Y-%m-%d %H:%M')" && echo "=== COMMITTED ==="
 ```
 
 // turbo
 10. Push lên GitHub (kích hoạt CI/CD tự động):
 ```bash
-cd /Users/nguyenhoang/Downloads/Bookify\ clone && git push origin main 2>&1 && echo "=== PUSHED TO GITHUB - CI/CD TRIGGERED ===" || echo "=== PUSH FAILED (check remote) ==="
+cd /Users/nguyenhoang/Downloads/Bookify && git push origin main 2>&1 && echo "=== PUSHED TO GITHUB - CI/CD TRIGGERED ===" || echo "=== PUSH FAILED (check remote) ==="
 ```
 
 ---
@@ -94,6 +94,6 @@ cd /Users/nguyenhoang/Downloads/Bookify\ clone && git push origin main 2>&1 && e
 // turbo
 11. Kiểm tra dev server có thể khởi động:
 ```bash
-cd /Users/nguyenhoang/Downloads/Bookify\ clone/frontend && timeout 10 npm run dev 2>&1 | head -20 || echo "=== DEV SERVER CHECK DONE ==="
+cd /Users/nguyenhoang/Downloads/Bookify/frontend && timeout 10 npm run dev 2>&1 | head -20 || echo "=== DEV SERVER CHECK DONE ==="
 ```
 
