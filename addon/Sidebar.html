@@ -107,7 +107,7 @@
   <!-- Loading State -->
   <div class="loading" id="loader">
     <div class="spinner"></div>
-    <div class="loading-text">Loading Atticus...</div>
+    <div class="loading-text">Loading Bookify...</div>
     <div class="loading-sub">Connecting to formatter</div>
   </div>
 
@@ -115,7 +115,7 @@
   <div class="error" id="error-view">
     <div class="error-icon">!</div>
     <div class="error-text">Failed to load</div>
-    <div class="error-detail" id="error-detail">Could not connect to Atticus. Please check your internet connection.
+    <div class="error-detail" id="error-detail">Could not connect to Bookify. Please check your internet connection.
     </div>
     <button class="retry-btn" onclick="loadApp()">Retry</button>
   </div>
@@ -124,7 +124,7 @@
   <iframe id="app-frame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
 
   <script>
-    const FRONTEND_URL = 'https://atticus-clone.pages.dev';
+    const FRONTEND_URL = 'https://bookify.pages.dev';
     const LOAD_TIMEOUT = 15000; // 15 seconds
 
     const frame = document.getElementById('app-frame');
@@ -169,7 +169,7 @@
 
     window.addEventListener('message', function (event) {
       // Security: only accept messages from our frontend
-      if (!event.origin.includes('atticus-clone.pages.dev') && !event.origin.includes('atticus.pages.dev') && !event.origin.includes('localhost')) {
+      if (!event.origin.includes('bookify.pages.dev') && !event.origin.includes('bookify.pages.dev') && !event.origin.includes('localhost')) {
         return;
       }
 

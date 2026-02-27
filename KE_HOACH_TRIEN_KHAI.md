@@ -1,5 +1,5 @@
 # KE HOACH TRIEN KHAI CHI TIET
-# ATTICUS GOOGLE DOCS EXTENSION + FREE TIER STRATEGY
+# BOOKIFY GOOGLE DOCS EXTENSION + FREE TIER STRATEGY
 
 **Ngay tao:** 2026-02-27
 **Muc tieu:** $0/thang (0-500 users) -> $7-26/thang (2000 users)
@@ -18,7 +18,7 @@
 
 ---
 
-## PHAN 0: MAPPING FREE TIER STACK VAO KIEN TRUC ATTICUS {#phan-0}
+## PHAN 0: MAPPING FREE TIER STACK VAO KIEN TRUC BOOKIFY {#phan-0}
 
 ### Bang Thay The Dich Vu
 
@@ -40,10 +40,10 @@
 Google Docs Add-on (Apps Script)
     |
     |--- google.script.run ---> Frontend (Cloudflare Pages)
-    |                            https://atticus.pages.dev
+    |                            https://bookify.pages.dev
     |
     |--- UrlFetchApp ---------> Backend API (Render.com)
-    |                            https://atticus-api.onrender.com
+    |                            https://bookify-api.onrender.com
     |                                |
     |                                |--- Supabase (User data, metadata)
     |                                |--- Cloudflare R2 (Export files)
@@ -76,7 +76,7 @@ Google Docs Add-on (Apps Script)
 ### 1.1 Khoi Tao Monorepo
 
 ```
-atticus-gdocs-extension/
+bookify-gdocs-extension/
 ├── addon/                      # Google Apps Script (clasp)
 │   ├── appsscript.json
 │   ├── Code.gs
@@ -137,15 +137,15 @@ atticus-gdocs-extension/
 | 2 | Cloudflare | cloudflare.com | Tao account, vao Pages + R2 |
 | 3 | Supabase | supabase.com | Tao project, chon region Singapore |
 | 4 | Upstash | upstash.com | Tao Redis database, chon region ap-southeast-1 |
-| 5 | GitHub | github.com | Tao repo atticus-gdocs-extension |
-| 6 | Google Cloud | console.cloud.google.com | Tao project atticus-gdocs-addon |
+| 5 | GitHub | github.com | Tao repo bookify-gdocs-extension |
+| 6 | Google Cloud | console.cloud.google.com | Tao project bookify-gdocs-addon |
 | 7 | Chrome Web Store | chromewebstore.google.com | Tra phi $5, tao developer account |
 
 #### Buoc 2: Cau hinh Google Cloud Project
 
 ```bash
 # Tao project
-gcloud projects create atticus-gdocs-addon
+gcloud projects create bookify-gdocs-addon
 
 # Bat APIs can thiet
 gcloud services enable \
@@ -241,10 +241,10 @@ CREATE POLICY "Users see own stats" ON writing_stats
 
 ```bash
 # Trong Cloudflare Dashboard:
-# 1. R2 > Create Bucket > ten: "atticus-exports"
+# 1. R2 > Create Bucket > ten: "bookify-exports"
 # 2. R2 > Manage R2 API Tokens > Create API Token
 #    - Permissions: Object Read & Write
-#    - Specify bucket: atticus-exports
+#    - Specify bucket: bookify-exports
 # 3. Luu lai:
 #    - Account ID
 #    - Access Key ID
@@ -256,7 +256,7 @@ CREATE POLICY "Users see own stats" ON writing_stats
 
 ```bash
 # Trong Upstash Console:
-# 1. Create Database > ten: "atticus-cache"
+# 1. Create Database > ten: "bookify-cache"
 # 2. Region: ap-southeast-1 (Singapore)
 # 3. Luu lai:
 #    - UPSTASH_REDIS_REST_URL
@@ -285,7 +285,7 @@ SUPABASE_SERVICE_KEY=eyJxxx
 R2_ACCOUNT_ID=xxx
 R2_ACCESS_KEY_ID=xxx
 R2_SECRET_ACCESS_KEY=xxx
-R2_BUCKET_NAME=atticus-exports
+R2_BUCKET_NAME=bookify-exports
 R2_ENDPOINT=https://xxx.r2.cloudflarestorage.com
 
 # Upstash Redis
@@ -358,7 +358,7 @@ CMD ["node", "--max-old-space-size=256", "src/server.js"]
 
 services:
   - type: web
-    name: atticus-api
+    name: bookify-api
     runtime: docker
     dockerfilePath: ./Dockerfile
     plan: free           # Free tier: 512MB RAM, 0.1 CPU
@@ -389,7 +389,7 @@ jobs:
     steps:
       - name: Ping backend
         run: |
-          curl -sf https://atticus-api.onrender.com/health || true
+          curl -sf https://bookify-api.onrender.com/health || true
           echo "Pinged at $(date)"
 ```
 
@@ -408,7 +408,7 @@ jobs:
 # Root directory: / (root of repo)
 
 # Buoc 3: Environment variables
-# VITE_API_URL=https://atticus-api.onrender.com
+# VITE_API_URL=https://bookify-api.onrender.com
 # VITE_SUPABASE_URL=https://xxx.supabase.co
 # VITE_SUPABASE_ANON_KEY=xxx
 ```
@@ -425,7 +425,7 @@ jobs:
 
 1. Khoi tao monorepo:
 ```bash
-mkdir atticus-gdocs-extension && cd atticus-gdocs-extension
+mkdir bookify-gdocs-extension && cd bookify-gdocs-extension
 git init
 
 # Backend
@@ -472,7 +472,7 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 app.use(cors({
   origin: [
-    'https://atticus.pages.dev',
+    'https://bookify.pages.dev',
     /\.google\.com$/,
     /script\.google\.com$/
   ]
@@ -498,7 +498,7 @@ app.use('/fonts', fontRoutes);
 app.use('/validate', authMiddleware, validateRoutes);
 
 app.listen(PORT, () => {
-  console.log(`Atticus API running on port ${PORT}`);
+  console.log(`Bookify API running on port ${PORT}`);
 });
 ```
 
@@ -941,16 +941,16 @@ module.exports = { generatePdf };
 2. Tao `addon/Code.gs`:
 ```javascript
 /**
- * Atticus Book Formatter - Main Entry Points
+ * Bookify - Main Entry Points
  * @OnlyCurrentDoc
  */
 
-const API_BASE_URL = 'https://atticus-api.onrender.com';
-const FRONTEND_URL = 'https://atticus.pages.dev';
+const API_BASE_URL = 'https://bookify-api.onrender.com';
+const FRONTEND_URL = 'https://bookify.pages.dev';
 
 function onOpen(e) {
   DocumentApp.getUi()
-    .createMenu('Atticus')
+    .createMenu('Bookify')
     .addItem('Open Formatter', 'openSidebar')
     .addItem('Quick Export EPUB', 'quickExportEpub')
     .addItem('Quick Export PDF', 'quickExportPdf')
@@ -962,7 +962,7 @@ function onOpen(e) {
 
 function onHomepage(e) {
   return CardService.newCardBuilder()
-    .setHeader(CardService.newCardHeader().setTitle('Atticus Book Formatter'))
+    .setHeader(CardService.newCardHeader().setTitle('Bookify'))
     .addSection(
       CardService.newCardSection()
         .addWidget(CardService.newTextParagraph()
@@ -976,7 +976,7 @@ function onHomepage(e) {
 
 function openSidebar() {
   const html = HtmlService.createHtmlOutputFromFile('Sidebar')
-    .setTitle('Atticus Book Formatter')
+    .setTitle('Bookify')
     .setWidth(350);
   DocumentApp.getUi().showSidebar(html);
 }
@@ -1024,7 +1024,7 @@ function insertChapterBreak() {
   <div class="loading" id="loader">
     <div>
       <div class="spinner"></div>
-      <p>Loading Atticus...</p>
+      <p>Loading Bookify...</p>
     </div>
   </div>
   <iframe id="app-frame" style="display:none"></iframe>
@@ -1381,7 +1381,7 @@ git push origin main
 # 2. Trong Render Dashboard:
 #    - New > Web Service
 #    - Connect GitHub repo
-#    - Name: atticus-api
+#    - Name: bookify-api
 #    - Region: Singapore
 #    - Branch: main
 #    - Root Directory: backend
@@ -1390,7 +1390,7 @@ git push origin main
 #    - Add environment variables tu .env
 
 # 3. Verify
-curl https://atticus-api.onrender.com/health
+curl https://bookify-api.onrender.com/health
 ```
 
 #### Ngay 3: Deploy Frontend len Cloudflare Pages
@@ -1403,9 +1403,9 @@ curl https://atticus-api.onrender.com/health
 #      Output directory: frontend/dist
 
 # 2. Add env vars:
-#    VITE_API_URL=https://atticus-api.onrender.com
+#    VITE_API_URL=https://bookify-api.onrender.com
 
-# 3. Deploy & verify: https://atticus.pages.dev
+# 3. Deploy & verify: https://bookify.pages.dev
 ```
 
 #### Ngay 4-5: Deploy Add-on + End-to-End Testing
@@ -1414,11 +1414,11 @@ curl https://atticus-api.onrender.com/health
 # 1. Clasp setup
 cd addon
 clasp login
-clasp create --type standalone --title "Atticus Book Formatter"
+clasp create --type standalone --title "Bookify"
 clasp push
 
 # 2. Test trong Google Docs
-# Mo Google Doc > Extensions > Atticus Book Formatter
+# Mo Google Doc > Extensions > Bookify
 # Test export EPUB voi 1 chapter don gian
 # Test export PDF voi trim size 6x9
 
@@ -1603,7 +1603,7 @@ async function setCachedWordCount(docId, data) {
 
 ```bash
 # 1. Tao ZIP cho Chrome Web Store
-cd addon && zip -r ../atticus-addon.zip .
+cd addon && zip -r ../bookify-addon.zip .
 
 # 2. Vao chromewebstore.google.com/devconsole
 # 3. New Item > Upload ZIP

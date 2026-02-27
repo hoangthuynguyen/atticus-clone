@@ -271,7 +271,7 @@ export function PreviewerPanel() {
         <button
           onClick={loadPreviewContent}
           disabled={loadingContent}
-          className="text-[10px] px-2 py-1 rounded bg-atticus-50 text-atticus-600 hover:bg-atticus-100 disabled:opacity-50"
+          className="text-[10px] px-2 py-1 rounded bg-bookify-50 text-bookify-600 hover:bg-bookify-100 disabled:opacity-50"
         >
           {loadingContent ? 'Loading…' : '↻ Live Preview'}
         </button>
@@ -289,7 +289,7 @@ export function PreviewerPanel() {
             }}
             className={`flex-1 py-1 rounded text-[10px] font-medium transition-colors
               ${activeCategory === cat
-                ? 'bg-white text-atticus-600 shadow-sm'
+                ? 'bg-white text-bookify-600 shadow-sm'
                 : 'text-gray-500 hover:text-gray-700'}`}
           >
             {CATEGORY_LABELS[cat]}
@@ -305,7 +305,7 @@ export function PreviewerPanel() {
             onClick={() => setSelectedDevice(device)}
             className={`flex-1 py-1.5 rounded text-[10px] font-medium flex flex-col items-center gap-0.5
               ${selectedDevice.id === device.id
-                ? 'bg-atticus-600 text-white'
+                ? 'bg-bookify-600 text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
           >
             <span>{device.icon}</span>
@@ -325,7 +325,7 @@ export function PreviewerPanel() {
             max={24}
             value={previewFontSize}
             onChange={(e) => setPreviewFontSize(parseInt(e.target.value))}
-            className="w-full h-1.5 accent-atticus-600"
+            className="w-full h-1.5 accent-bookify-600"
           />
         </div>
 
@@ -343,7 +343,7 @@ export function PreviewerPanel() {
         {/* Margins Toggle */}
         <button
           onClick={() => setShowMargins(!showMargins)}
-          className={`px-2 py-1 rounded text-[10px] ${showMargins ? 'bg-atticus-50 text-atticus-600' : 'bg-gray-100 text-gray-500'}`}
+          className={`px-2 py-1 rounded text-[10px] ${showMargins ? 'bg-bookify-50 text-bookify-600' : 'bg-gray-100 text-gray-500'}`}
           title="Toggle margins"
         >
           ☐
@@ -358,7 +358,7 @@ export function PreviewerPanel() {
             onClick={() => setSelectedTheme(theme)}
             className={`flex-1 py-1 rounded text-[10px] font-medium
               ${selectedTheme.id === theme.id
-                ? 'ring-2 ring-atticus-400 ring-offset-1'
+                ? 'ring-2 ring-bookify-400 ring-offset-1'
                 : ''}`}
             style={{
               background: theme.bodyBg,

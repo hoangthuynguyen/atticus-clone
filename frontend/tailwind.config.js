@@ -8,7 +8,7 @@ export default {
         sidebar: '350px',
       },
       colors: {
-        atticus: {
+        bookify: {
           50: '#eff6ff',
           100: '#dbeafe',
           500: '#3b82f6',

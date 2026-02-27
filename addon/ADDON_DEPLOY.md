@@ -1,15 +1,15 @@
-# Atticus Add-on — Google Docs Integration Guide
+# Bookify Add-on — Google Docs Integration Guide
 
 ## Tổng Quan
 
-Đây là **Google Docs Add-on**, hoạt động tương tự Atticus/Vellum nhưng tích hợp ngay trong Google Docs.
+Đây là **Google Docs Add-on**, hoạt động tương tự Bookify/Vellum nhưng tích hợp ngay trong Google Docs.
 
 ```
 Google Docs Sidebar
     ↕ postMessage
-React App (atticus-clone.pages.dev)
+React App (bookify.pages.dev)
     ↕ REST API
-Node.js Backend (atticus-api.onrender.com)
+Node.js Backend (bookify-api.onrender.com)
 ```
 
 ---
@@ -35,7 +35,7 @@ clasp login
 cd addon/
 
 # Option A: Tạo project mới
-clasp create --type standalone --title "Atticus Book Formatter"
+clasp create --type standalone --title "Bookify"
 
 # Option B: Link vào project có sẵn
 cp .clasp.json.example .clasp.json
@@ -60,7 +60,7 @@ clasp open
 # → Mở Apps Script IDE
 
 # Trong IDE: Run → Run function → onOpen
-# Sau đó mở Google Doc → Menu "Atticus" xuất hiện
+# Sau đó mở Google Doc → Menu "Bookify" xuất hiện
 ```
 
 ### Bước 5 (Optional): Deploy Cho User Khác
@@ -90,9 +90,9 @@ Backend cần Google OAuth để xác thực user.
    - Google Drive API
 4. APIs & Services → Credentials → Create OAuth 2.0 Client
    - Type: Web Application
-   - Name: Atticus Backend
+   - Name: Bookify Backend
    - Authorized redirect URIs:
-     https://atticus-api.onrender.com/auth/google/callback
+     https://bookify-api.onrender.com/auth/google/callback
 5. Download credentials
 ```
 
@@ -114,9 +114,9 @@ Push lên Render.com và set environment variables trong Render Dashboard.
 ### Flow đầy đủ:
 
 ```
-1. User click "Atticus → Open Formatter" trong Google Docs
+1. User click "Bookify → Open Formatter" trong Google Docs
 2. Apps Script chạy openSidebar() → tạo HTML panel
-3. Sidebar.html load → tạo iframe → load atticus-clone.pages.dev
+3. Sidebar.html load → tạo iframe → load bookify.pages.dev
 4. React app hiện UI với 7 tabs
 5. User click action (ví dụ: "Apply Theme"):
    a. React gọi callGas('applyTheme', themeConfig)
@@ -127,7 +127,7 @@ Push lên Render.com và set environment variables trong Render Dashboard.
    f. Trả kết quả về React
 6. User click "Export EPUB":
    a. Apps Script chạy ExportService.gs → getDocumentContent()
-   b. Gọi UrlFetchApp → atticus-api.onrender.com/export/epub
+   b. Gọi UrlFetchApp → bookify-api.onrender.com/export/epub
    c. Backend generate EPUB → upload lên R2
    d. Trả signed URL về
    e. React hiện download link
@@ -154,7 +154,7 @@ Apps Script → ScriptApp.getOAuthToken()
 - [ ] `.clasp.json` có script ID thật
 - [ ] `clasp push` thành công
 - [ ] Test `onOpen()` chạy được trong Apps Script IDE
-- [ ] Menu "Atticus" hiện trong Google Docs
+- [ ] Menu "Bookify" hiện trong Google Docs
 - [ ] Sidebar load được React app
 - [ ] Export EPUB test thành công
 - [ ] Supabase migrations đã apply (kiểm tra trong Supabase Dashboard)
@@ -169,7 +169,7 @@ Apps Script → ScriptApp.getOAuthToken()
 - Kiểm tra CORS: backend có allow `*.pages.dev` không
 
 ### Export không hoạt động
-- Kiểm tra backend đang chạy: `curl https://atticus-api.onrender.com/health`
+- Kiểm tra backend đang chạy: `curl https://bookify-api.onrender.com/health`
 - Kiểm tra auth token: Apps Script log → `Logger.log(ScriptApp.getOAuthToken())`
 - Kiểm tra R2 credentials trong Render.com env vars
 

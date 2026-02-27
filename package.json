@@ -1,15 +1,15 @@
 {
-  "name": "atticus-gdocs-extension",
+  "name": "bookify-gdocs-extension",
   "version": "1.0.0",
   "private": true,
-  "description": "Atticus Book Formatter - Google Docs Extension",
+  "description": "Bookify - Google Docs Extension",
   "scripts": {
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
     "build:frontend": "cd frontend && npm run build",
     "build:backend": "cd backend && npm run build",
     "deploy:addon": "cd addon && clasp push --force",
-    "deploy:frontend": "cd frontend && npx wrangler pages deploy dist --project-name=atticus",
+    "deploy:frontend": "cd frontend && npx wrangler pages deploy dist --project-name=bookify",
     "test": "cd backend && npm test",
     "lint": "cd backend && npm run lint && cd ../frontend && npm run lint"
   },

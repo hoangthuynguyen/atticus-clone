@@ -17,7 +17,7 @@ interface ThemePresetI {
   sceneBreakSymbol: string;
 }
 
-const API_URL = (import.meta as unknown as { env: Record<string, string> }).env?.VITE_API_URL || 'https://atticus-api.onrender.com';
+const API_URL = (import.meta as unknown as { env: Record<string, string> }).env?.VITE_API_URL || 'https://bookify-api.onrender.com';
 
 export function ThemePanel() {
   const [themes, setThemes] = useState<ThemePresetI[]>([]);
@@ -77,7 +77,7 @@ export function ThemePanel() {
     return (
       <div className="p-3 space-y-2">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-5 h-5 bg-atticus-100 rounded animate-pulse" />
+          <div className="w-5 h-5 bg-bookify-100 rounded animate-pulse" />
           <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
         </div>
         {[1, 2, 3, 4].map((i) => (
@@ -96,14 +96,14 @@ export function ThemePanel() {
           <button
             onClick={() => setTab('presets')}
             className={`flex-1 px-2 py-1.5 rounded-md text-[11px] font-medium transition-colors
-              ${tab === 'presets' ? 'bg-white text-atticus-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              ${tab === 'presets' ? 'bg-white text-bookify-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
           >
             Preset Themes
           </button>
           <button
             onClick={() => setTab('custom')}
             className={`flex-1 px-2 py-1.5 rounded-md text-[11px] font-medium transition-colors
-              ${tab === 'custom' ? 'bg-white text-atticus-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              ${tab === 'custom' ? 'bg-white text-bookify-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
           >
             Custom Builder
           </button>
@@ -127,7 +127,7 @@ export function ThemePanel() {
               <div className="text-center py-8">
                 <p className="text-xs text-gray-500">No themes loaded.</p>
                 <p className="text-[11px] text-gray-400 mt-1">Check your API connection.</p>
-                <button onClick={fetchThemes} className="mt-3 text-xs text-atticus-600 hover:underline">
+                <button onClick={fetchThemes} className="mt-3 text-xs text-bookify-600 hover:underline">
                   Retry
                 </button>
               </div>
@@ -142,8 +142,8 @@ export function ThemePanel() {
                       disabled={applying}
                       className={`w-full p-3 rounded-lg border text-left transition-all hover:shadow-sm disabled:opacity-50 group
                         ${selectedId === theme.id
-                          ? 'border-atticus-400 bg-atticus-50 ring-1 ring-atticus-200'
-                          : 'border-gray-200 bg-white hover:border-atticus-200 hover:bg-blue-50/30'
+                          ? 'border-bookify-400 bg-bookify-50 ring-1 ring-bookify-200'
+                          : 'border-gray-200 bg-white hover:border-bookify-200 hover:bg-blue-50/30'
                         }`}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -151,7 +151,7 @@ export function ThemePanel() {
                           <div className="flex items-center gap-2">
                             <p className="text-xs font-semibold text-gray-800 truncate">{theme.name}</p>
                             {selectedId === theme.id && (
-                              <span className="text-[9px] px-1.5 py-0.5 bg-atticus-100 text-atticus-700 rounded-full font-medium flex-shrink-0">
+                              <span className="text-[9px] px-1.5 py-0.5 bg-bookify-100 text-bookify-700 rounded-full font-medium flex-shrink-0">
                                 Applied
                               </span>
                             )}
@@ -169,7 +169,7 @@ export function ThemePanel() {
                         <span>{theme.bodyFont}</span>
                         <span>{theme.fontSize}</span>
                         <span>{theme.lineHeight}× spacing</span>
-                        {theme.dropCaps && <span className="text-atticus-500">Drop caps</span>}
+                        {theme.dropCaps && <span className="text-bookify-500">Drop caps</span>}
                       </div>
 
                       {/* Mini preview */}
@@ -216,7 +216,7 @@ export function ThemePanel() {
               <select
                 value={customTheme.bodyFont}
                 onChange={e => setCustomTheme({ ...customTheme, bodyFont: e.target.value })}
-                className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-atticus-400"
+                className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-bookify-400"
               >
                 {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
               </select>
@@ -228,7 +228,7 @@ export function ThemePanel() {
               <select
                 value={customTheme.headingFont}
                 onChange={e => setCustomTheme({ ...customTheme, headingFont: e.target.value })}
-                className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-atticus-400"
+                className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-bookify-400"
               >
                 {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
               </select>
@@ -241,7 +241,7 @@ export function ThemePanel() {
                 <select
                   value={customTheme.fontSize}
                   onChange={e => setCustomTheme({ ...customTheme, fontSize: e.target.value })}
-                  className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-atticus-400"
+                  className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-bookify-400"
                 >
                   {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
@@ -251,7 +251,7 @@ export function ThemePanel() {
                 <select
                   value={customTheme.lineHeight}
                   onChange={e => setCustomTheme({ ...customTheme, lineHeight: Number(e.target.value) })}
-                  className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-atticus-400"
+                  className="w-full mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-bookify-400"
                 >
                   <option value={1.2}>1.2×</option>
                   <option value={1.4}>1.4×</option>
@@ -276,7 +276,7 @@ export function ThemePanel() {
                   type="text"
                   value={customTheme.colorAccent}
                   onChange={e => setCustomTheme({ ...customTheme, colorAccent: e.target.value })}
-                  className="flex-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs font-mono focus:outline-none focus:ring-1 focus:ring-atticus-400"
+                  className="flex-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-xs font-mono focus:outline-none focus:ring-1 focus:ring-bookify-400"
                   placeholder="#333333"
                 />
               </div>
@@ -285,8 +285,8 @@ export function ThemePanel() {
             <button
               onClick={() => handleApplyTheme(customTheme as ThemePresetI)}
               disabled={applying}
-              className="w-full py-2.5 bg-atticus-600 text-white rounded-lg text-sm font-medium
-                hover:bg-atticus-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-bookify-600 text-white rounded-lg text-sm font-medium
+                hover:bg-bookify-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               {applying ? (
                 <>

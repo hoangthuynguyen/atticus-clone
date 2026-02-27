@@ -1,5 +1,5 @@
 # =============================================================================
-# Atticus API - Multi-stage Dockerfile
+# Bookify API - Multi-stage Dockerfile
 # Optimized for Render.com free tier (512MB RAM)
 # Uses WeasyPrint instead of Puppeteer (10x lighter)
 # =============================================================================

@@ -1,5 +1,5 @@
 -- =============================================================================
--- Atticus Book Formatter - Initial Database Schema
+-- Bookify - Initial Database Schema
 -- Supabase (PostgreSQL) - Free Tier: 500MB DB, 50k MAU
 -- =============================================================================
 

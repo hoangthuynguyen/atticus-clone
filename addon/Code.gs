@@ -1,5 +1,5 @@
 /**
- * Atticus Book Formatter — Main Entry Points
+ * Bookify — Main Entry Points
  * Google Workspace Add-on for Google Docs
  * @OnlyCurrentDoc
  */
@@ -9,10 +9,10 @@
 // =============================================================================
 
 const CONFIG = {
-  API_BASE_URL: 'https://atticus-api.onrender.com',
-  FRONTEND_URL: 'https://atticus-clone.pages.dev',
+  API_BASE_URL: 'https://bookify-api.onrender.com',
+  FRONTEND_URL: 'https://bookify.pages.dev',
   SIDEBAR_WIDTH: 350,
-  SIDEBAR_TITLE: 'Atticus Book Formatter',
+  SIDEBAR_TITLE: 'Bookify',
 };
 
 // =============================================================================
@@ -20,12 +20,12 @@ const CONFIG = {
 // =============================================================================
 
 /**
- * Called when the document is opened. Adds the Atticus menu.
+ * Called when the document is opened. Adds the Bookify menu.
  * @param {GoogleAppsScript.Events.DocsOnOpen} e - The onOpen event
  */
 function onOpen(e) {
   DocumentApp.getUi()
-    .createMenu('Atticus')
+    .createMenu('Bookify')
     .addItem('Open Formatter', 'openSidebar')
     .addSeparator()
     .addSubMenu(
@@ -55,7 +55,7 @@ function onHomepage(e) {
   return CardService.newCardBuilder()
     .setHeader(
       CardService.newCardHeader()
-        .setTitle('Atticus Book Formatter')
+        .setTitle('Bookify')
         .setSubtitle('Format & Export your book')
         .setImageStyle(CardService.ImageStyle.CIRCLE)
     )
@@ -67,7 +67,7 @@ function onHomepage(e) {
         )
         .addWidget(
           CardService.newTextButton()
-            .setText('Open Atticus Panel')
+            .setText('Open Bookify Panel')
             .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
             .setOnClickAction(CardService.newAction().setFunctionName('openSidebar'))
         )
@@ -88,7 +88,7 @@ function onFileScopeGranted(e) {
 // =============================================================================
 
 /**
- * Opens the Atticus sidebar with the React app loaded in an iframe.
+ * Opens the Bookify sidebar with the React app loaded in an iframe.
  */
 function openSidebar() {
   const html = HtmlService.createHtmlOutputFromFile('Sidebar')

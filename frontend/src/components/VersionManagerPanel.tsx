@@ -35,7 +35,7 @@ export function VersionManagerPanel() {
                     onClick={() => setActiveSection('versions')}
                     className={`flex-1 py-1.5 rounded text-[11px] font-medium transition-colors
             ${activeSection === 'versions'
-                            ? 'bg-white text-atticus-600 shadow-sm'
+                            ? 'bg-white text-bookify-600 shadow-sm'
                             : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     📋 Versions
@@ -44,7 +44,7 @@ export function VersionManagerPanel() {
                     onClick={() => setActiveSection('collaborate')}
                     className={`flex-1 py-1.5 rounded text-[11px] font-medium transition-colors
             ${activeSection === 'collaborate'
-                            ? 'bg-white text-atticus-600 shadow-sm'
+                            ? 'bg-white text-bookify-600 shadow-sm'
                             : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     👥 Collaborate
@@ -160,12 +160,12 @@ function VersionsSection() {
                         onChange={(e) => setNewVersionName(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
                         placeholder="e.g. v1.0 — First Draft"
-                        className="flex-1 px-2 py-1.5 rounded border border-gray-200 text-xs focus:outline-none focus:ring-1 focus:ring-atticus-400 focus:border-atticus-400"
+                        className="flex-1 px-2 py-1.5 rounded border border-gray-200 text-xs focus:outline-none focus:ring-1 focus:ring-bookify-400 focus:border-bookify-400"
                     />
                     <button
                         onClick={handleCreate}
                         disabled={saving || !newVersionName.trim()}
-                        className="px-3 py-1.5 rounded text-xs font-medium bg-atticus-600 text-white hover:bg-atticus-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                        className="px-3 py-1.5 rounded text-xs font-medium bg-bookify-600 text-white hover:bg-bookify-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                     >
                         {saving ? '…' : '💾 Save'}
                     </button>
@@ -190,7 +190,7 @@ function VersionsSection() {
             {/* Loading */}
             {loading && (
                 <div className="flex items-center justify-center py-6">
-                    <div className="w-5 h-5 border-2 border-gray-200 border-t-atticus-600 rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-gray-200 border-t-bookify-600 rounded-full animate-spin" />
                 </div>
             )}
 
@@ -204,7 +204,7 @@ function VersionsSection() {
                     {namedVersions.map((v) => (
                         <div
                             key={v.revisionId}
-                            className="bg-white border border-gray-150 rounded-lg p-2 hover:border-atticus-200 transition-colors"
+                            className="bg-white border border-gray-150 rounded-lg p-2 hover:border-bookify-200 transition-colors"
                         >
                             {renamingId === v.revisionId ? (
                                 <div className="flex gap-1 mb-1">
@@ -216,10 +216,10 @@ function VersionsSection() {
                                             if (e.key === 'Enter') handleRename(v.revisionId);
                                             if (e.key === 'Escape') setRenamingId(null);
                                         }}
-                                        className="flex-1 px-1.5 py-0.5 border rounded text-[11px] focus:ring-1 focus:ring-atticus-400"
+                                        className="flex-1 px-1.5 py-0.5 border rounded text-[11px] focus:ring-1 focus:ring-bookify-400"
                                         autoFocus
                                     />
-                                    <button onClick={() => handleRename(v.revisionId)} className="text-[10px] text-atticus-600 hover:text-atticus-700">✓</button>
+                                    <button onClick={() => handleRename(v.revisionId)} className="text-[10px] text-bookify-600 hover:text-bookify-700">✓</button>
                                     <button onClick={() => setRenamingId(null)} className="text-[10px] text-gray-400 hover:text-gray-600">✕</button>
                                 </div>
                             ) : (
@@ -272,7 +272,7 @@ function VersionsSection() {
                             <div className="flex gap-0.5 shrink-0">
                                 <button
                                     onClick={() => { setRenamingId(v.revisionId); setRenameValue(''); }}
-                                    className="p-1 rounded text-[10px] text-gray-400 hover:text-atticus-600 hover:bg-atticus-50"
+                                    className="p-1 rounded text-[10px] text-gray-400 hover:text-bookify-600 hover:bg-bookify-50"
                                     title="Name this version"
                                 >
                                     📌
@@ -303,7 +303,7 @@ function VersionsSection() {
             {!loading && (
                 <button
                     onClick={loadVersions}
-                    className="w-full py-1.5 text-[11px] text-gray-500 hover:text-atticus-600 hover:bg-gray-50 rounded transition-colors"
+                    className="w-full py-1.5 text-[11px] text-gray-500 hover:text-bookify-600 hover:bg-gray-50 rounded transition-colors"
                 >
                     ↻ Refresh versions
                 </button>
@@ -397,14 +397,14 @@ function CollaborateSection() {
                         onChange={(e) => setEmail(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleShare()}
                         placeholder="email@example.com"
-                        className="flex-1 px-2 py-1.5 rounded border border-gray-200 text-xs focus:outline-none focus:ring-1 focus:ring-atticus-400 focus:border-atticus-400"
+                        className="flex-1 px-2 py-1.5 rounded border border-gray-200 text-xs focus:outline-none focus:ring-1 focus:ring-bookify-400 focus:border-bookify-400"
                     />
                 </div>
                 <div className="flex gap-1.5 items-center">
                     <select
                         value={role}
                         onChange={(e) => setRole(e.target.value as 'reader' | 'commenter' | 'writer')}
-                        className="flex-1 px-2 py-1.5 rounded border border-gray-200 text-xs focus:outline-none focus:ring-1 focus:ring-atticus-400 bg-white"
+                        className="flex-1 px-2 py-1.5 rounded border border-gray-200 text-xs focus:outline-none focus:ring-1 focus:ring-bookify-400 bg-white"
                     >
                         <option value="reader">Can view</option>
                         <option value="commenter">Can comment</option>
@@ -413,7 +413,7 @@ function CollaborateSection() {
                     <button
                         onClick={handleShare}
                         disabled={sharing || !email.trim()}
-                        className="px-3 py-1.5 rounded text-xs font-medium bg-atticus-600 text-white hover:bg-atticus-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                        className="px-3 py-1.5 rounded text-xs font-medium bg-bookify-600 text-white hover:bg-bookify-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                     >
                         {sharing ? '…' : '📤 Share'}
                     </button>
@@ -438,7 +438,7 @@ function CollaborateSection() {
             {/* Loading */}
             {loading && (
                 <div className="flex items-center justify-center py-6">
-                    <div className="w-5 h-5 border-2 border-gray-200 border-t-atticus-600 rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-gray-200 border-t-bookify-600 rounded-full animate-spin" />
                 </div>
             )}
 
@@ -452,7 +452,7 @@ function CollaborateSection() {
                     {collaborators.map((c) => (
                         <div
                             key={c.email}
-                            className="flex items-center justify-between px-2 py-1.5 bg-white border border-gray-150 rounded-lg hover:border-atticus-200 transition-colors"
+                            className="flex items-center justify-between px-2 py-1.5 bg-white border border-gray-150 rounded-lg hover:border-bookify-200 transition-colors"
                         >
                             <div className="min-w-0 flex-1">
                                 <p className="text-[11px] text-gray-700 truncate">{c.email}</p>
@@ -487,7 +487,7 @@ function CollaborateSection() {
             {!loading && (
                 <button
                     onClick={loadCollaborators}
-                    className="w-full py-1.5 text-[11px] text-gray-500 hover:text-atticus-600 hover:bg-gray-50 rounded transition-colors"
+                    className="w-full py-1.5 text-[11px] text-gray-500 hover:text-bookify-600 hover:bg-gray-50 rounded transition-colors"
                 >
                     ↻ Refresh collaborators
                 </button>

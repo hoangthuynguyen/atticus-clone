@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(helmet());
 const allowedOrigins = [
-  process.env.FRONTEND_URL || 'https://atticus.pages.dev',
+  process.env.FRONTEND_URL || 'https://bookify.pages.dev',
   /\.google\.com$/,
   /script\.google\.com$/,
   // Dev
@@ -43,7 +43,7 @@ app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'atticus-api',
+    service: 'bookify-api',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     memory: Math.round(process.memoryUsage().rss / 1024 / 1024) + 'MB',
@@ -82,7 +82,7 @@ app.use((err, req, res, _next) => {
 // =============================================================================
 
 app.listen(PORT, () => {
-  console.log(`Atticus API running on port ${PORT}`);
+  console.log(`Bookify API running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Memory limit: ${Math.round(require('v8').getHeapStatistics().heap_size_limit / 1024 / 1024)}MB`);
 });

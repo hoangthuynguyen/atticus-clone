@@ -26,14 +26,14 @@ export function StructurePanel() {
         <button
           onClick={() => setActiveSection('chapters')}
           className={`flex-1 px-2 py-1 rounded text-[11px] font-medium
-            ${activeSection === 'chapters' ? 'bg-atticus-600 text-white' : 'bg-gray-100 text-gray-600'}`}
+            ${activeSection === 'chapters' ? 'bg-bookify-600 text-white' : 'bg-gray-100 text-gray-600'}`}
         >
           Chapters
         </button>
         <button
           onClick={() => setActiveSection('versions')}
           className={`flex-1 px-2 py-1 rounded text-[11px] font-medium
-            ${activeSection === 'versions' ? 'bg-atticus-600 text-white' : 'bg-gray-100 text-gray-600'}`}
+            ${activeSection === 'versions' ? 'bg-bookify-600 text-white' : 'bg-gray-100 text-gray-600'}`}
         >
           Versions
         </button>
@@ -148,7 +148,7 @@ function VersionManager() {
         <button
           onClick={handleCreateVersion}
           disabled={saving || !newVersionName.trim()}
-          className="px-3 py-1.5 bg-atticus-600 text-white rounded text-xs font-medium disabled:opacity-50"
+          className="px-3 py-1.5 bg-bookify-600 text-white rounded text-xs font-medium disabled:opacity-50"
         >
           Save
         </button>

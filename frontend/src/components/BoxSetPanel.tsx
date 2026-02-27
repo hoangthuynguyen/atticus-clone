@@ -51,7 +51,7 @@ export function BoxSetPanel() {
                     <input
                         type="text"
                         placeholder="e.g. The Lord of The Rings: The Complete Trilogy"
-                        className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none transition-shadow"
+                        className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none transition-shadow"
                         value={title}
                         onChange={e => setTitle(e.target.value)}
                     />
@@ -63,7 +63,7 @@ export function BoxSetPanel() {
                         <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{urlsText.split('\n').filter(x => x.trim()).length} documents found</span>
                     </div>
                     <textarea
-                        className="w-full h-40 text-[11px] p-2.5 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none font-mono whitespace-nowrap overflow-x-auto leading-loose transition-shadow bg-gray-50 focus:bg-white"
+                        className="w-full h-40 text-[11px] p-2.5 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none font-mono whitespace-nowrap overflow-x-auto leading-loose transition-shadow bg-gray-50 focus:bg-white"
                         placeholder="https://docs.google.com/document/d/...&#10;https://docs.google.com/document/d/...&#10;"
                         value={urlsText}
                         onChange={e => setUrlsText(e.target.value)}
@@ -76,7 +76,7 @@ export function BoxSetPanel() {
                 <button
                     onClick={handleGenerate}
                     disabled={loading || !urlsText.trim()}
-                    className="w-full py-3 bg-atticus-600 text-white rounded-lg text-sm font-bold hover:bg-atticus-700 disabled:opacity-50 transition-all shadow-sm active:scale-[0.99] flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-bookify-600 text-white rounded-lg text-sm font-bold hover:bg-bookify-700 disabled:opacity-50 transition-all shadow-sm active:scale-[0.99] flex items-center justify-center gap-2"
                 >
                     {loading ? (
                         <>

@@ -81,7 +81,7 @@ export function FormattingPanel() {
               onClick={() => setActiveSection(s.id)}
               className={`px-2 py-1 rounded-md text-[11px] font-medium flex items-center gap-1 transition-colors
                 ${activeSection === s.id
-                  ? 'bg-atticus-600 text-white'
+                  ? 'bg-bookify-600 text-white'
                   : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}`}
             >
               <span>{s.emoji}</span>
@@ -114,7 +114,7 @@ export function FormattingPanel() {
                   onClick={() => withStatus(() => callGas('insertSceneBreak', symbol), `Scene break inserted`)}
                   disabled={loading}
                   className="aspect-square flex items-center justify-center text-lg bg-white border border-gray-200
-                    rounded-md hover:bg-atticus-50 hover:border-atticus-300 hover:text-atticus-700
+                    rounded-md hover:bg-bookify-50 hover:border-bookify-300 hover:text-bookify-700
                     active:scale-95 transition-all disabled:opacity-40 shadow-sm"
                   title={`Insert: ${symbol}`}
                 >
@@ -191,7 +191,7 @@ export function FormattingPanel() {
                 'Text messages inserted'
               )}
               disabled={loading}
-              className="w-full py-2.5 bg-atticus-600 text-white rounded-lg text-xs font-semibold disabled:opacity-50 hover:bg-atticus-700 transition-colors"
+              className="w-full py-2.5 bg-bookify-600 text-white rounded-lg text-xs font-semibold disabled:opacity-50 hover:bg-bookify-700 transition-colors"
             >
               {loading ? 'Inserting…' : 'Insert Example Conversation'}
             </button>
@@ -205,15 +205,15 @@ export function FormattingPanel() {
             <div className="space-y-2">
               <div>
                 <label className="text-[10px] font-semibold text-gray-600 block mb-1">Chapter Heading</label>
-                <input type="text" placeholder="e.g. Chapter 1" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={chapterData.title} onChange={e => setChapterData({ ...chapterData, title: e.target.value })} />
+                <input type="text" placeholder="e.g. Chapter 1" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={chapterData.title} onChange={e => setChapterData({ ...chapterData, title: e.target.value })} />
               </div>
               <div>
                 <label className="text-[10px] font-semibold text-gray-600 block mb-1">Subtitle (Optional)</label>
-                <input type="text" placeholder="e.g. The Boy Who Lived" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={chapterData.subtitle} onChange={e => setChapterData({ ...chapterData, subtitle: e.target.value })} />
+                <input type="text" placeholder="e.g. The Boy Who Lived" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={chapterData.subtitle} onChange={e => setChapterData({ ...chapterData, subtitle: e.target.value })} />
               </div>
               <div>
                 <label className="text-[10px] font-semibold text-gray-600 block mb-1">Alignment</label>
-                <select className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none bg-white" value={chapterData.align} onChange={e => setChapterData({ ...chapterData, align: e.target.value })}>
+                <select className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none bg-white" value={chapterData.align} onChange={e => setChapterData({ ...chapterData, align: e.target.value })}>
                   <option value="left">Left</option>
                   <option value="center">Center</option>
                   <option value="right">Right</option>
@@ -228,7 +228,7 @@ export function FormattingPanel() {
                   `Chapter heading inserted!`
                 )}
                 disabled={loading}
-                className="w-full py-2 bg-atticus-600 text-white rounded-md text-xs font-bold disabled:opacity-50 hover:bg-atticus-700 transition-colors shadow-sm"
+                className="w-full py-2 bg-bookify-600 text-white rounded-md text-xs font-bold disabled:opacity-50 hover:bg-bookify-700 transition-colors shadow-sm"
               >
                 {loading ? 'Inserting...' : 'Insert Chapter'}
               </button>
@@ -290,35 +290,35 @@ export function FormattingPanel() {
                 <div className="space-y-2">
                   {activeFmType === 'title-page' && (
                     <>
-                      <input type="text" placeholder="Book Title" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.title || ''} onChange={e => setFmData({ ...fmData, title: e.target.value })} />
-                      <input type="text" placeholder="Subtitle (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.subtitle || ''} onChange={e => setFmData({ ...fmData, subtitle: e.target.value })} />
-                      <input type="text" placeholder="Author Name" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.author || ''} onChange={e => setFmData({ ...fmData, author: e.target.value })} />
+                      <input type="text" placeholder="Book Title" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.title || ''} onChange={e => setFmData({ ...fmData, title: e.target.value })} />
+                      <input type="text" placeholder="Subtitle (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.subtitle || ''} onChange={e => setFmData({ ...fmData, subtitle: e.target.value })} />
+                      <input type="text" placeholder="Author Name" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.author || ''} onChange={e => setFmData({ ...fmData, author: e.target.value })} />
                     </>
                   )}
                   {activeFmType === 'copyright' && (
                     <>
-                      <input type="text" placeholder="Author Name" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.author || ''} onChange={e => setFmData({ ...fmData, author: e.target.value })} />
-                      <input type="text" placeholder="Year (e.g. 2026)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.year || ''} onChange={e => setFmData({ ...fmData, year: e.target.value })} />
-                      <input type="text" placeholder="ISBN (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.isbn || ''} onChange={e => setFmData({ ...fmData, isbn: e.target.value })} />
-                      <input type="text" placeholder="Publisher (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.publisher || ''} onChange={e => setFmData({ ...fmData, publisher: e.target.value })} />
-                      <input type="text" placeholder="Edition (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.edition || ''} onChange={e => setFmData({ ...fmData, edition: e.target.value })} />
+                      <input type="text" placeholder="Author Name" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.author || ''} onChange={e => setFmData({ ...fmData, author: e.target.value })} />
+                      <input type="text" placeholder="Year (e.g. 2026)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.year || ''} onChange={e => setFmData({ ...fmData, year: e.target.value })} />
+                      <input type="text" placeholder="ISBN (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.isbn || ''} onChange={e => setFmData({ ...fmData, isbn: e.target.value })} />
+                      <input type="text" placeholder="Publisher (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.publisher || ''} onChange={e => setFmData({ ...fmData, publisher: e.target.value })} />
+                      <input type="text" placeholder="Edition (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.edition || ''} onChange={e => setFmData({ ...fmData, edition: e.target.value })} />
                     </>
                   )}
                   {activeFmType === 'dedication' && (
-                    <textarea placeholder="For Mom and Dad, who always believed in me..." className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none h-24 resize-none" value={fmData.text || ''} onChange={e => setFmData({ ...fmData, text: e.target.value })} />
+                    <textarea placeholder="For Mom and Dad, who always believed in me..." className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none h-24 resize-none" value={fmData.text || ''} onChange={e => setFmData({ ...fmData, text: e.target.value })} />
                   )}
                   {activeFmType === 'about-author' && (
-                    <textarea placeholder="Write a short biography about yourself..." className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none h-32 resize-none" value={fmData.text || ''} onChange={e => setFmData({ ...fmData, text: e.target.value })} />
+                    <textarea placeholder="Write a short biography about yourself..." className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none h-32 resize-none" value={fmData.text || ''} onChange={e => setFmData({ ...fmData, text: e.target.value })} />
                   )}
                   {activeFmType === 'also-by' && (
                     <>
-                      <input type="text" placeholder="Author Name" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.author || ''} onChange={e => setFmData({ ...fmData, author: e.target.value })} />
-                      <textarea placeholder="Book 1\nBook 2\nBook 3" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none h-24 resize-none" value={fmData.books || ''} onChange={e => setFmData({ ...fmData, books: e.target.value })} />
+                      <input type="text" placeholder="Author Name" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.author || ''} onChange={e => setFmData({ ...fmData, author: e.target.value })} />
+                      <textarea placeholder="Book 1\nBook 2\nBook 3" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none h-24 resize-none" value={fmData.books || ''} onChange={e => setFmData({ ...fmData, books: e.target.value })} />
                       <p className="text-[10px] text-gray-500 mt-1 pl-1">Put each book title on a new line</p>
                     </>
                   )}
                   {activeFmType === 'acknowledgments' && (
-                    <textarea placeholder="I would like to thank..." className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none h-32 resize-none" value={fmData.text || ''} onChange={e => setFmData({ ...fmData, text: e.target.value })} />
+                    <textarea placeholder="I would like to thank..." className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none h-32 resize-none" value={fmData.text || ''} onChange={e => setFmData({ ...fmData, text: e.target.value })} />
                   )}
                 </div>
 
@@ -338,7 +338,7 @@ export function FormattingPanel() {
                       }
                     }}
                     disabled={loading}
-                    className="w-full py-2 bg-atticus-600 text-white rounded-md text-xs font-bold disabled:opacity-50 hover:bg-atticus-700 transition-colors shadow-sm"
+                    className="w-full py-2 bg-bookify-600 text-white rounded-md text-xs font-bold disabled:opacity-50 hover:bg-bookify-700 transition-colors shadow-sm"
                   >
                     {loading ? 'Inserting...' : 'Insert Page'}
                   </button>
@@ -353,7 +353,7 @@ export function FormattingPanel() {
           <div className="space-y-3">
             {/* Visual demo */}
             <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <span className="float-left text-5xl font-bold text-atticus-600 mr-1 leading-[0.8] mt-1">T</span>
+              <span className="float-left text-5xl font-bold text-bookify-600 mr-1 leading-[0.8] mt-1">T</span>
               <p className="text-xs text-gray-600 leading-relaxed">
                 he morning sun cast long shadows across the valley as she made her way down the winding path to the village below.
               </p>
@@ -368,8 +368,8 @@ export function FormattingPanel() {
                 'Drop cap applied'
               )}
               disabled={loading}
-              className="w-full py-2.5 bg-atticus-600 text-white rounded-lg text-xs font-semibold
-                disabled:opacity-50 hover:bg-atticus-700 transition-colors"
+              className="w-full py-2.5 bg-bookify-600 text-white rounded-lg text-xs font-semibold
+                disabled:opacity-50 hover:bg-bookify-700 transition-colors"
             >
               {loading ? 'Applying…' : 'Apply Drop Cap'}
             </button>
@@ -391,7 +391,7 @@ export function FormattingPanel() {
                   `Image format updated!`
                 )}
                 disabled={loading}
-                className="w-full py-2 bg-atticus-600 text-white rounded-md text-xs font-bold disabled:opacity-50 hover:bg-atticus-700 transition-colors shadow-sm"
+                className="w-full py-2 bg-bookify-600 text-white rounded-md text-xs font-bold disabled:opacity-50 hover:bg-bookify-700 transition-colors shadow-sm"
               >
                 {loading ? 'Processing...' : 'Toggle Full Bleed Image (PDF)'}
               </button>

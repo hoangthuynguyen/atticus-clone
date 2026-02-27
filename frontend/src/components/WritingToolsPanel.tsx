@@ -47,7 +47,7 @@ export function WritingToolsPanel() {
               title={s.label}
               className={`flex-1 py-1.5 rounded-md text-center transition-colors
                 ${activeSection === s.id
-                  ? 'bg-atticus-600 text-white'
+                  ? 'bg-bookify-600 text-white'
                   : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200'}`}
             >
               <span className="block text-[13px]">{s.icon}</span>
@@ -103,7 +103,7 @@ function WordCountSection() {
         <button
           onClick={refresh}
           disabled={loading}
-          className="text-[11px] text-atticus-600 hover:underline disabled:opacity-50 font-medium"
+          className="text-[11px] text-bookify-600 hover:underline disabled:opacity-50 font-medium"
         >
           {loading ? 'Counting…' : '↻ Refresh'}
         </button>
@@ -134,7 +134,7 @@ function WordCountSection() {
           </div>
           <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all ${daily.percentage >= 100 ? 'bg-green-500' : 'bg-atticus-600'}`}
+              className={`h-full rounded-full transition-all ${daily.percentage >= 100 ? 'bg-green-500' : 'bg-bookify-600'}`}
               style={{ width: `${Math.min(100, daily.percentage)}%` }}
             />
           </div>
@@ -151,9 +151,9 @@ function WordCountSection() {
 
 function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className={`p-2.5 rounded-lg border ${accent ? 'bg-atticus-50 border-atticus-100' : 'bg-white border-gray-100'}`}>
+    <div className={`p-2.5 rounded-lg border ${accent ? 'bg-bookify-50 border-bookify-100' : 'bg-white border-gray-100'}`}>
       <p className="text-[10px] text-gray-500 mb-0.5">{label}</p>
-      <p className={`text-base font-bold ${accent ? 'text-atticus-700' : 'text-gray-800'}`}>{value}</p>
+      <p className={`text-base font-bold ${accent ? 'text-bookify-700' : 'text-gray-800'}`}>{value}</p>
     </div>
   );
 }
@@ -254,7 +254,7 @@ function SprintTimerSection() {
               onClick={() => { setDuration(m); setRemaining(m * 60); setRunning(false); }}
               className={`py-1.5 rounded-md text-[10px] font-medium transition-colors
                 ${duration === m
-                  ? 'bg-atticus-600 text-white'
+                  ? 'bg-bookify-600 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
             >
               {m}m
@@ -299,7 +299,7 @@ function StreakSection() {
   if (!data) return (
     <div className="text-center py-8">
       <p className="text-[11px] text-gray-500">Could not load streak data.</p>
-      <button onClick={loadStreak} className="mt-2 text-xs text-atticus-600 hover:underline">Retry</button>
+      <button onClick={loadStreak} className="mt-2 text-xs text-bookify-600 hover:underline">Retry</button>
     </div>
   );
 
@@ -394,8 +394,8 @@ function SmartQuotesSection() {
       <button
         onClick={handleScan}
         disabled={loading}
-        className="w-full py-2.5 bg-atticus-600 text-white rounded-lg text-xs font-semibold
-          hover:bg-atticus-700 disabled:opacity-50 transition-colors"
+        className="w-full py-2.5 bg-bookify-600 text-white rounded-lg text-xs font-semibold
+          hover:bg-bookify-700 disabled:opacity-50 transition-colors"
       >
         {loading ? 'Scanning…' : 'Scan Document'}
       </button>
@@ -479,8 +479,8 @@ function AnalyzeSection() {
       <button
         onClick={handleAnalyze}
         disabled={loading}
-        className="w-full py-2.5 bg-atticus-600 text-white rounded-lg text-xs font-semibold
-          hover:bg-atticus-700 disabled:opacity-50 transition-colors"
+        className="w-full py-2.5 bg-bookify-600 text-white rounded-lg text-xs font-semibold
+          hover:bg-bookify-700 disabled:opacity-50 transition-colors"
       >
         {loading ? 'Analyzing…' : 'Run Analysis'}
       </button>
@@ -494,8 +494,8 @@ function AnalyzeSection() {
           <div className="p-3 bg-gray-50 border border-gray-100 rounded-lg">
             <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Readability</p>
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-atticus-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-atticus-700 font-bold">{data.readingLevel}</span>
+              <div className="w-12 h-12 rounded-full bg-bookify-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-bookify-700 font-bold">{data.readingLevel}</span>
               </div>
               <div>
                 <p className="text-xs font-semibold text-gray-800">Grade {data.readingLevel} · {gradeLabel(data.readingLevel)}</p>
@@ -528,7 +528,7 @@ function AnalyzeSection() {
                   <span className="text-gray-700 w-20 truncate">{w.word}</span>
                   <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-atticus-500 rounded-full"
+                      className="h-full bg-bookify-500 rounded-full"
                       style={{ width: `${(w.count / data.wordFrequencies[0].count) * 100}%` }}
                     />
                   </div>
@@ -577,8 +577,8 @@ function DpiValidatorSection() {
       <button
         onClick={handleScan}
         disabled={loading}
-        className="w-full py-2.5 bg-atticus-600 text-white rounded-lg text-xs font-semibold
-          hover:bg-atticus-700 disabled:opacity-50 transition-colors"
+        className="w-full py-2.5 bg-bookify-600 text-white rounded-lg text-xs font-semibold
+          hover:bg-bookify-700 disabled:opacity-50 transition-colors"
       >
         {loading ? 'Scanning Images…' : 'Validate Print Quality'}
       </button>

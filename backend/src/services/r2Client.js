@@ -14,7 +14,7 @@ const r2 = new S3Client({
   },
 });
 
-const BUCKET = process.env.R2_BUCKET_NAME || 'atticus-exports';
+const BUCKET = process.env.R2_BUCKET_NAME || 'bookify-exports';
 const SIGNED_URL_EXPIRY = parseInt(process.env.SIGNED_URL_EXPIRY_HOURS || '24') * 3600;
 
 /**

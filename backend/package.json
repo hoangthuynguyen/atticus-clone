@@ -1,8 +1,8 @@
 {
-  "name": "atticus-backend",
+  "name": "bookify-backend",
   "version": "1.0.0",
   "private": true,
-  "description": "Atticus Book Formatter - Backend API",
+  "description": "Bookify - Backend API",
   "main": "src/server.js",
   "scripts": {
     "start": "node --max-old-space-size=256 src/server.js",

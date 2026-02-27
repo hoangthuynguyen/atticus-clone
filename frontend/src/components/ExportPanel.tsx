@@ -144,7 +144,7 @@ export function ExportPanel() {
               onClick={() => { toggleExportFormat(fmt); setResults({}); }}
               className={`py-2 rounded-lg text-xs font-bold border-2 transition-all flex flex-col items-center gap-0.5
                 ${isSelected
-                  ? 'border-atticus-600 bg-atticus-600 text-white shadow-sm'
+                  ? 'border-bookify-600 bg-bookify-600 text-white shadow-sm'
                   : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700'}`}
             >
               <div className="flex gap-1.5 items-center">
@@ -179,14 +179,14 @@ export function ExportPanel() {
             placeholder="Title (defaults to document name)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-2 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-atticus-400"
+            className="w-full p-2 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-bookify-400"
           />
           <input
             type="text"
             placeholder="Author Name"
             value={author}
             onChange={(e) => setAuthor(e.target.value)}
-            className="w-full p-2 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-atticus-400"
+            className="w-full p-2 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-bookify-400"
           />
           <div className="grid grid-cols-2 gap-2">
             <input
@@ -194,14 +194,14 @@ export function ExportPanel() {
               placeholder="ISBN"
               value={isbn}
               onChange={(e) => setIsbn(e.target.value)}
-              className="p-2 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-atticus-400"
+              className="p-2 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-bookify-400"
             />
             <input
               type="text"
               placeholder="Publisher"
               value={publisher}
               onChange={(e) => setPublisher(e.target.value)}
-              className="p-2 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-atticus-400"
+              className="p-2 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-bookify-400"
             />
           </div>
         </div>
@@ -299,8 +299,8 @@ export function ExportPanel() {
       <button
         onClick={handleExport}
         disabled={isExporting || exportFormats.length === 0}
-        className="w-full py-3 bg-atticus-600 text-white rounded-lg text-sm font-semibold
-          hover:bg-atticus-700 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed
+        className="w-full py-3 bg-bookify-600 text-white rounded-lg text-sm font-semibold
+          hover:bg-bookify-700 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed
           transition-all shadow-sm flex items-center justify-center gap-2 mt-4"
       >
         {isExporting ? (

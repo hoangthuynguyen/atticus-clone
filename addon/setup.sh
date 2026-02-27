@@ -1,10 +1,10 @@
 #!/bin/bash
 # =============================================================================
-# ATTICUS ADDON SETUP SCRIPT
+# BOOKIFY ADDON SETUP SCRIPT
 # Chạy file này để deploy add-on lên Google Docs
 # =============================================================================
 
-echo "🚀 Atticus Add-on Setup"
+echo "🚀 Bookify Add-on Setup"
 echo "========================"
 
 # 1. Kiểm tra clasp đã cài chưa
@@ -29,7 +29,7 @@ echo "  [B] Link vào script ID có sẵn"
 read -p "Nhập A hoặc B: " choice
 
 if [ "$choice" = "A" ] || [ "$choice" = "a" ]; then
-    clasp create --type standalone --title "Atticus Book Formatter"
+    clasp create --type standalone --title "Bookify"
     echo "✅ Project mới được tạo, .clasp.json đã được cập nhật"
 else
     read -p "Nhập Script ID của bạn: " scriptId
@@ -49,6 +49,6 @@ echo "📋 Bước tiếp theo:"
 echo "  1. Chạy: clasp open"
 echo "  2. Trong Apps Script IDE: chạy function onOpen()"
 echo "  3. Mở Google Doc bất kỳ"
-echo "  4. Menu 'Atticus' sẽ xuất hiện → Open Formatter"
+echo "  4. Menu 'Bookify' sẽ xuất hiện → Open Formatter"
 echo ""
 echo "🔗 Script URL: https://script.google.com"

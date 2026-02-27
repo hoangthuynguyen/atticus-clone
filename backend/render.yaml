@@ -6,7 +6,7 @@
 
 services:
   - type: web
-    name: atticus-api
+    name: bookify-api
     runtime: docker
     dockerfilePath: ./Dockerfile
     plan: free

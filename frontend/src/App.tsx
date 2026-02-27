@@ -28,11 +28,11 @@ export default function App() {
     <div className="flex flex-col h-screen max-w-sidebar bg-white">
       {/* Header */}
       <header className="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
-        <div className="w-7 h-7 bg-atticus-600 rounded-lg flex items-center justify-center shadow-sm">
+        <div className="w-7 h-7 bg-bookify-600 rounded-lg flex items-center justify-center shadow-sm">
           <span className="text-white text-[13px] font-bold">A</span>
         </div>
         <div>
-          <span className="text-sm font-bold text-gray-900">Atticus</span>
+          <span className="text-sm font-bold text-gray-900">Bookify</span>
           <span className="ml-1.5 text-[10px] text-gray-400">Book Formatter</span>
         </div>
       </header>
@@ -46,7 +46,7 @@ export default function App() {
             title={tab.label}
             className={`flex-1 min-w-[70px] flex-shrink-0 py-2.5 flex flex-col items-center gap-1 transition-colors border-b-2
               ${activeTab === tab.id
-                ? 'border-atticus-600 text-atticus-600 bg-white'
+                ? 'border-bookify-600 text-bookify-600 bg-white'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-white/60'
               }`}
           >
@@ -84,7 +84,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="px-3 py-1 border-t border-gray-100 bg-gray-50">
-        <p className="text-[9px] text-gray-300 text-center font-medium tracking-wider uppercase">Atticus v1.0</p>
+        <p className="text-[9px] text-gray-300 text-center font-medium tracking-wider uppercase">Bookify v1.0</p>
       </footer>
     </div>
   );

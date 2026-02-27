@@ -16,7 +16,7 @@ jobs:
       - name: Ping Render backend
         run: |
           RESPONSE=$(curl -sf -o /dev/null -w "%{http_code}" \
-            https://atticus-api.onrender.com/health || echo "000")
+            https://bookify-api.onrender.com/health || echo "000")
           echo "Health check response: $RESPONSE"
           if [ "$RESPONSE" != "200" ]; then
             echo "Warning: Backend returned $RESPONSE (may be starting up)"

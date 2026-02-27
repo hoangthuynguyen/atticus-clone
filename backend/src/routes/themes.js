@@ -88,7 +88,7 @@ const PRESET_THEMES = [
     cssVars: { '--image-padding': '0', '--text-align': 'left' },
   },
   {
-    id: 'atticus-austen',
+    id: 'bookify-austen',
     name: 'The Austen (Romance)',
     genre: 'Romance / Historical',
     bodyFont: 'EB Garamond',
@@ -118,7 +118,7 @@ const PRESET_THEMES = [
     cssVars: {},
   },
   {
-    id: 'atticus-king',
+    id: 'bookify-king',
     name: 'The King (Thriller)',
     genre: 'Thriller / Mystery',
     bodyFont: 'Merriweather',

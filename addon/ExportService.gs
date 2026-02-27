@@ -69,7 +69,7 @@ function getDocumentContent() {
 // =============================================================================
 
 /**
- * Calls the Atticus backend API.
+ * Calls the Bookify backend API.
  * @param {string} endpoint - API endpoint (e.g., '/export/epub')
  * @param {object} payload - Request body
  * @returns {object} Parsed JSON response
@@ -308,13 +308,13 @@ function saveExportToDrive(downloadUrl, filename, mimeType) {
     var response = UrlFetchApp.fetch(downloadUrl);
     var blob = response.getBlob().setName(filename);
 
-    // Create or find "Atticus Exports" folder
-    var folders = DriveApp.getFoldersByName('Atticus Exports');
+    // Create or find "Bookify Exports" folder
+    var folders = DriveApp.getFoldersByName('Bookify Exports');
     var folder;
     if (folders.hasNext()) {
       folder = folders.next();
     } else {
-      folder = DriveApp.createFolder('Atticus Exports');
+      folder = DriveApp.createFolder('Bookify Exports');
     }
 
     var file = folder.createFile(blob);
