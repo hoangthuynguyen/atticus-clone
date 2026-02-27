@@ -127,6 +127,23 @@ export function ExportPanel() {
     }
   }
 
+  const [preflightWarnings, setPreflightWarnings] = useState<any[]>([]);
+  const [runningPreflight, setRunningPreflight] = useState(false);
+
+  async function handlePreflight() {
+    setRunningPreflight(true);
+    setPreflightWarnings([]);
+    try {
+      const settings = { platform };
+      const warnings = await callGas<any[]>('runPreflightCheck', settings);
+      setPreflightWarnings(warnings && warnings.length > 0 ? warnings : [{ type: 'success', level: 'success', message: 'All checks passed! Document is ready for print/distribution.' }]);
+    } catch (e) {
+      setPreflightWarnings([{ type: 'error', level: 'error', message: 'Failed to run checks: ' + String(e) }]);
+    } finally {
+      setRunningPreflight(false);
+    }
+  }
+
   return (
     <div className="p-3 space-y-3 pb-20">
       <div>
@@ -294,6 +311,46 @@ export function ExportPanel() {
           </div>
         </div>
       )}
+
+      {/* Pre-flight Checks (Optional) */}
+      <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg space-y-2 mt-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="text-[10px] font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-1">
+              <span className="text-sm">🩺</span> Pre-flight Check
+            </p>
+            <p className="text-[10px] text-gray-500">Scan for print & distribution issues</p>
+          </div>
+          <button
+            onClick={handlePreflight}
+            disabled={runningPreflight}
+            className="px-2 py-1 bg-white border border-gray-300 rounded text-[10px] font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+          >
+            {runningPreflight ? 'Scanning...' : 'Run Checks'}
+          </button>
+        </div>
+
+        {preflightWarnings.length > 0 && (
+          <div className="mt-2 space-y-1">
+            {preflightWarnings.map((w, i) => (
+              <div
+                key={i}
+                className={`p-2 rounded text-[10px] font-medium leading-relaxed border ${w.level === 'error' ? 'bg-red-50 text-red-700 border-red-200' :
+                    w.level === 'warning' ? 'bg-yellow-50 text-yellow-800 border-yellow-200' :
+                      'bg-green-50 text-green-700 border-green-200'
+                  }`}
+              >
+                <div className="flex items-start gap-1.5">
+                  <span className="mt-0.5 flex-shrink-0">
+                    {w.level === 'error' ? '❌' : w.level === 'warning' ? '⚠️' : '✅'}
+                  </span>
+                  <span>{w.message}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Export Button */}
       <button
