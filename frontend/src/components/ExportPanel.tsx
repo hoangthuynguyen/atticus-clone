@@ -41,6 +41,12 @@ export function ExportPanel() {
   const [mirrorMargins, setMirrorMargins] = useState(true);
   const [orphanControl, setOrphanControl] = useState(true);
 
+  // Metadata Overrides
+  const [title, setTitle] = useState('');
+  const [author, setAuthor] = useState('');
+  const [isbn, setIsbn] = useState('');
+  const [publisher, setPublisher] = useState('');
+
   async function handleExport() {
     setIsExporting(true);
     setResult(null);
@@ -57,6 +63,12 @@ export function ExportPanel() {
         trimSize,
         mirrorMargins,
         orphanControl,
+        metadataOverrides: {
+          title: title.trim() || undefined,
+          author: author.trim() || undefined,
+          isbn: isbn.trim() || undefined,
+          publisher: publisher.trim() || undefined,
+        }
       };
 
       const res = await callGas<ExportResult>(method, settings);
@@ -86,6 +98,45 @@ export function ExportPanel() {
             {fmt.toUpperCase()}
           </button>
         ))}
+      </div>
+
+      {/* Book Metadata */}
+      <div className="space-y-2 p-3 bg-gray-50 border border-gray-100 rounded">
+        <h3 className="text-xs font-semibold text-gray-700">Book Metadata (Optional)</h3>
+        <div>
+          <input
+            type="text"
+            placeholder="Book Title (defaults to doc name)"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full mt-1 p-1.5 border rounded text-xs bg-white"
+          />
+        </div>
+        <div>
+          <input
+            type="text"
+            placeholder="Author Name"
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)}
+            className="w-full p-1.5 border rounded text-xs bg-white"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <input
+            type="text"
+            placeholder="ISBN (Optional)"
+            value={isbn}
+            onChange={(e) => setIsbn(e.target.value)}
+            className="w-full p-1.5 border rounded text-xs bg-white"
+          />
+          <input
+            type="text"
+            placeholder="Publisher"
+            value={publisher}
+            onChange={(e) => setPublisher(e.target.value)}
+            className="w-full p-1.5 border rounded text-xs bg-white"
+          />
+        </div>
       </div>
 
       {/* EPUB Settings */}

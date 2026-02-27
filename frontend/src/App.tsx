@@ -5,6 +5,7 @@ import { ThemePanel } from './components/ThemePanel';
 import { WritingToolsPanel } from './components/WritingToolsPanel';
 import { StructurePanel } from './components/StructurePanel';
 import { PreviewerPanel } from './components/PreviewerPanel';
+import { VersionManagerPanel } from './components/VersionManagerPanel';
 
 const TABS = [
   { id: 'export' as const, label: 'Export', icon: '>' },
@@ -13,6 +14,7 @@ const TABS = [
   { id: 'tools' as const, label: 'Tools', icon: '+' },
   { id: 'structure' as const, label: 'Structure', icon: '=' },
   { id: 'previewer' as const, label: 'Preview', icon: 'D' },
+  { id: 'versions' as const, label: 'Versions', icon: 'V' },
 ];
 
 export default function App() {
@@ -63,6 +65,7 @@ export default function App() {
         {activeTab === 'tools' && <WritingToolsPanel />}
         {activeTab === 'structure' && <StructurePanel />}
         {activeTab === 'previewer' && <PreviewerPanel />}
+        {activeTab === 'versions' && <VersionManagerPanel />}
       </main>
 
       {/* Footer */}

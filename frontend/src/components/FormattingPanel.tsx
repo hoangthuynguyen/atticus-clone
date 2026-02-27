@@ -18,9 +18,12 @@ const SCENE_BREAK_SYMBOLS = [
 ];
 
 const FRONT_MATTER_TYPES = [
-  { id: 'title-page', label: 'Title Page' },
-  { id: 'copyright', label: 'Copyright Page' },
-  { id: 'dedication', label: 'Dedication' },
+  { id: 'title-page', label: 'Title Page', type: 'front' },
+  { id: 'copyright', label: 'Copyright Page', type: 'front' },
+  { id: 'dedication', label: 'Dedication', type: 'front' },
+  { id: 'about-author', label: 'About the Author', type: 'back' },
+  { id: 'also-by', label: 'Also By', type: 'back' },
+  { id: 'acknowledgments', label: 'Acknowledgments', type: 'back' },
 ];
 
 export function FormattingPanel() {
@@ -41,23 +44,6 @@ export function FormattingPanel() {
     }
   }
 
-  async function handleInsertCallout() {
-    setLoading(true);
-    try {
-      await callGas('insertCalloutBox', {
-        title: 'Note',
-        text: 'Type your callout text here...',
-        bgColor: '#EFF6FF',
-        borderColor: '#1E40AF',
-        icon: 'i',
-      });
-      setStatus('Callout box inserted');
-    } catch (err) {
-      setStatus(`Error: ${err instanceof Error ? err.message : String(err)}`);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   async function handleInsertFrontMatter(type: string) {
     setLoading(true);
@@ -75,15 +61,32 @@ export function FormattingPanel() {
     }
   }
 
+  async function handleInsertTextMessage() {
+    setLoading(true);
+    setStatus(null);
+    try {
+      await callGas('insertTextMessages', [
+        { sender: 'Alice', text: 'Hey, are you coming?', isSent: false },
+        { sender: 'Me', text: 'On my way!', isSent: true }
+      ]);
+      setStatus('Text messages inserted');
+    } catch (err) {
+      setStatus(`Error: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const sections = [
     { id: 'scene-breaks', label: 'Scene Breaks' },
     { id: 'callout', label: 'Call-Out Box' },
-    { id: 'front-matter', label: 'Front Matter' },
+    { id: 'text-message', label: 'Text Messages' },
+    { id: 'front-matter', label: 'Front/Back Matter' },
     { id: 'drop-caps', label: 'Drop Caps' },
   ];
 
   return (
-    <div className="p-3 space-y-3">
+    <div className="p-3 space-y-3 pb-20">
       <h2 className="text-sm font-semibold text-gray-800">Formatting</h2>
 
       {/* Section selector */}
@@ -168,20 +171,56 @@ export function FormattingPanel() {
         </div>
       )}
 
-      {/* Front Matter */}
+      {/* Front/Back Matter */}
       {activeSection === 'front-matter' && (
-        <div className="space-y-2">
-          <p className="text-[11px] text-gray-500">Insert front/back matter templates:</p>
-          {FRONT_MATTER_TYPES.map((fm) => (
-            <button
-              key={fm.id}
-              onClick={() => handleInsertFrontMatter(fm.id)}
-              disabled={loading}
-              className="w-full p-2 text-left bg-gray-50 rounded text-xs hover:bg-gray-100 disabled:opacity-50"
-            >
-              {fm.label}
-            </button>
-          ))}
+        <div className="space-y-4">
+          <div>
+            <p className="text-[11px] font-semibold text-gray-700 mb-1">Front Matter</p>
+            <div className="space-y-1">
+              {FRONT_MATTER_TYPES.filter(m => m.type === 'front').map((fm) => (
+                <button
+                  key={fm.id}
+                  onClick={() => handleInsertFrontMatter(fm.id)}
+                  disabled={loading}
+                  className="w-full p-2 text-left bg-gray-50 rounded text-xs hover:bg-gray-100 disabled:opacity-50"
+                >
+                  {fm.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-[11px] font-semibold text-gray-700 mb-1">Back Matter</p>
+            <div className="space-y-1">
+              {FRONT_MATTER_TYPES.filter(m => m.type === 'back').map((fm) => (
+                <button
+                  key={fm.id}
+                  onClick={() => handleInsertFrontMatter(fm.id)}
+                  disabled={loading}
+                  className="w-full p-2 text-left bg-gray-50 rounded text-xs hover:bg-gray-100 disabled:opacity-50"
+                >
+                  {fm.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Text Message Formatter */}
+      {activeSection === 'text-message' && (
+        <div className="space-y-3">
+          <p className="text-[11px] text-gray-500">Insert an SMS/chat bubble layout at cursor:</p>
+          <button
+            onClick={handleInsertTextMessage}
+            disabled={loading}
+            className="w-full py-2 bg-atticus-600 text-white rounded text-xs font-medium disabled:opacity-50"
+          >
+            Insert Example Conversation
+          </button>
+          <p className="text-[10px] text-gray-400">
+            Note: The conversation structure is laid out as a table in Docs and will be styled like iOS/Android bubbles when exported to EPUB/PDF.
+          </p>
         </div>
       )}
 

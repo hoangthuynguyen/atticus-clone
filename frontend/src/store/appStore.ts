@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-type Tab = 'export' | 'formatting' | 'themes' | 'tools' | 'structure' | 'previewer';
+type Tab = 'export' | 'formatting' | 'themes' | 'tools' | 'structure' | 'previewer' | 'versions';
 
 interface AppState {
   activeTab: Tab;

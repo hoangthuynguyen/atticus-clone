@@ -383,6 +383,30 @@ function insertFrontMatter(type, data) {
         body.insertParagraph(insertIndex + 2, '').setPageBreakBefore(true);
         break;
 
+      case 'about-author':
+        var aboutPara = body.insertParagraph(insertIndex, 'About the Author');
+        aboutPara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+        var aboutText = body.insertParagraph(insertIndex + 1, 'Write about yourself here...');
+        body.insertParagraph(insertIndex + 2, '').setPageBreakBefore(true);
+        break;
+
+      case 'also-by':
+        var alsoPara = body.insertParagraph(insertIndex, 'Also By This Author');
+        alsoPara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+        var bookList = body.insertListItem(insertIndex + 1, 'Book 1');
+        bookList.setGlyphType(DocumentApp.GlyphType.BULLET);
+        var bookList2 = body.insertListItem(insertIndex + 2, 'Book 2');
+        bookList2.setGlyphType(DocumentApp.GlyphType.BULLET);
+        body.insertParagraph(insertIndex + 3, '').setPageBreakBefore(true);
+        break;
+
+      case 'acknowledgments':
+        var ackPara = body.insertParagraph(insertIndex, 'Acknowledgments');
+        ackPara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+        var ackText = body.insertParagraph(insertIndex + 1, 'I would like to thank...');
+        body.insertParagraph(insertIndex + 2, '').setPageBreakBefore(true);
+        break;
+
       default:
         throw new Error('Unknown front matter type: ' + type);
     }

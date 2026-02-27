@@ -22,7 +22,7 @@ interface StreakData {
 }
 
 export function WritingToolsPanel() {
-  const [activeSection, setActiveSection] = useState<'wordcount' | 'sprint' | 'streak' | 'quotes'>('wordcount');
+  const [activeSection, setActiveSection] = useState<'wordcount' | 'sprint' | 'streak' | 'quotes' | 'analyze'>('wordcount');
 
   return (
     <div className="p-3 space-y-3">
@@ -34,6 +34,7 @@ export function WritingToolsPanel() {
           { id: 'sprint' as const, label: 'Sprint Timer' },
           { id: 'streak' as const, label: 'Streak' },
           { id: 'quotes' as const, label: 'Smart Quotes' },
+          { id: 'analyze' as const, label: 'Analyze' },
         ].map((s) => (
           <button
             key={s.id}
@@ -50,6 +51,7 @@ export function WritingToolsPanel() {
       {activeSection === 'sprint' && <SprintTimerSection />}
       {activeSection === 'streak' && <StreakSection />}
       {activeSection === 'quotes' && <SmartQuotesSection />}
+      {activeSection === 'analyze' && <AnalyzeSection />}
     </div>
   );
 }
@@ -357,6 +359,109 @@ function SmartQuotesSection() {
               </button>
             </>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// Writing Analysis
+// =============================================================================
+
+interface AnalysisResult {
+  readingLevel: number;
+  sentences: number;
+  words: number;
+  cliches: Array<{ phrase: string; count: number }>;
+  wordFrequencies: Array<{ word: string; count: number }>;
+}
+
+function AnalyzeSection() {
+  const [data, setData] = useState<AnalysisResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleAnalyze() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await callGas<AnalysisResult>('analyzeText');
+      setData(res);
+    } catch (err) {
+      setError(`Analysis failed: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <p className="text-[11px] text-gray-500">Analyze reading level, cliches, and word frequencies.</p>
+
+      <button
+        onClick={handleAnalyze}
+        disabled={loading}
+        className="w-full py-2 bg-atticus-600 text-white rounded text-xs font-medium hover:bg-atticus-700 disabled:opacity-50"
+      >
+        {loading ? 'Analyzing...' : 'Run Analysis'}
+      </button>
+
+      {error && <p className="text-[11px] text-red-600 p-2 bg-red-50 rounded">{error}</p>}
+
+      {data && (
+        <div className="space-y-4">
+          {/* Reading Level */}
+          <div className="p-3 bg-gray-50 rounded border border-gray-100">
+            <h3 className="text-xs font-semibold text-gray-800 mb-2">Readability</h3>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-gray-600">Flesch-Kincaid Grade</span>
+              <span className="text-sm font-bold text-atticus-600">{data.readingLevel}</span>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-1">
+              Estimated US school grade level required to understand the text.
+            </p>
+          </div>
+
+          {/* Cliches */}
+          <div className="p-3 bg-gray-50 rounded border border-gray-100">
+            <h3 className="text-xs font-semibold text-gray-800 mb-2">Cliché Finder</h3>
+            {data.cliches.length === 0 ? (
+              <p className="text-[11px] text-green-600">No common clichés found.</p>
+            ) : (
+              <ul className="space-y-1">
+                {data.cliches.map((c, i) => (
+                  <li key={i} className="flex justify-between items-center text-[11px]">
+                    <span className="text-gray-700">"{c.phrase}"</span>
+                    <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded font-medium">
+                      x{c.count}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Word Frequency */}
+          <div className="p-3 bg-gray-50 rounded border border-gray-100">
+            <h3 className="text-xs font-semibold text-gray-800 mb-2">Repeated Words</h3>
+            <div className="space-y-1">
+              {data.wordFrequencies.map((w, i) => (
+                <div key={i} className="flex items-center justify-between text-[11px]">
+                  <span className="text-gray-700">{w.word}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-400"
+                        style={{ width: `${(w.count / data.wordFrequencies[0].count) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-gray-500 w-4 text-right">{w.count}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>

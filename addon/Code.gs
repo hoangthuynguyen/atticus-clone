@@ -10,7 +10,7 @@
 
 const CONFIG = {
   API_BASE_URL: 'https://atticus-api.onrender.com',
-  FRONTEND_URL: 'https://atticus.pages.dev',
+  FRONTEND_URL: 'https://atticus-clone.pages.dev',
   SIDEBAR_WIDTH: 350,
   SIDEBAR_TITLE: 'Atticus Book Formatter',
 };

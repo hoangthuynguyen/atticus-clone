@@ -375,3 +375,101 @@ function fixSmartQuotes() {
     throw new Error('Fix quotes failed: ' + error.message);
   }
 }
+
+// =============================================================================
+// Text Analysis (Grammarly/ProWritingAid Lite)
+// =============================================================================
+
+/**
+ * Analyze text for reading level, cliches, and word frequencies.
+ * @returns {object} Analysis results
+ */
+function analyzeText() {
+  try {
+    var doc = DocumentApp.getActiveDocument();
+    var text = doc.getBody().getText();
+
+    if (!text || text.trim().length === 0) {
+      return { 
+        readingLevel: 0, 
+        sentences: 0,
+        words: 0,
+        cliches: [], 
+        wordFrequencies: [] 
+      };
+    }
+
+    var sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [];
+    var wordsMatch = text.match(/\b\w+\b/g) || [];
+    var numSentences = sentences.length || 1;
+    var numWords = wordsMatch.length || 1;
+
+    // --- Syllable counting heuristic ---
+    function countSyllables(word) {
+      word = word.toLowerCase();
+      if (word.length <= 3) return 1;
+      word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+      word = word.replace(/^y/, '');
+      var sylMatch = word.match(/[aeiouy]{1,2}/g);
+      return sylMatch ? sylMatch.length : 1;
+    }
+
+    var numSyllables = 0;
+    var wordCounts = {};
+
+    // Stopwords for frequency analysis
+    var stopWords = ['the','be','to','of','and','a','in','that','have','i','it','for','not','on','with','he','as','you','do','at','this','but','his','by','from','they','we','say','her','she','or','an','will','my','one','all','would','there','their','what','so','up','out','if','about','who','get','which','go','me','when','make','can','like','time','no','just','him','know','take','people','into','year','your','good','some','could','them','see','other','than','then','now','look','only','come','its','over','think','also','back','after','use','two','how','our','work','first','well','way','even','new','want','because','any','these','give','day','most','us'];
+
+    for (var i = 0; i < wordsMatch.length; i++) {
+      var w = wordsMatch[i];
+      numSyllables += countSyllables(w);
+
+      var lowerW = w.toLowerCase();
+      if (stopWords.indexOf(lowerW) === -1 && lowerW.length > 2) {
+        wordCounts[lowerW] = (wordCounts[lowerW] || 0) + 1;
+      }
+    }
+
+    // Flesch-Kincaid Grade Level
+    // FKGL = 0.39 * (words/sentences) + 11.8 * (syllables/words) - 15.59
+    var fkgl = 0.39 * (numWords / numSentences) + 11.8 * (numSyllables / numWords) - 15.59;
+    fkgl = Math.max(0, Math.round(fkgl * 10) / 10);
+
+    // Sort word frequencies
+    var sortedFreqs = Object.keys(wordCounts).map(function(key) {
+      return { word: key, count: wordCounts[key] };
+    }).sort(function(a, b) {
+      return b.count - a.count;
+    }).slice(0, 10);
+
+    // --- Cliche Finder ---
+    var knownCliches = [
+      "at the end of the day", "avoid like the plague", "read between the lines",
+      "better late than never", "crystal clear", "fit as a fiddle", 
+      "in the nick of time", "piece of cake", "tip of the iceberg",
+      "elephant in the room", "nip it in the bud", "beat around the bush",
+      "actions speak louder than words", "bite the bullet"
+    ];
+
+    var clichesFound = [];
+    var lowerText = text.toLowerCase();
+    
+    for (var j = 0; j < knownCliches.length; j++) {
+      var cliche = knownCliches[j];
+      var count = (lowerText.match(new RegExp("\\b" + cliche + "\\b", "g")) || []).length;
+      if (count > 0) {
+        clichesFound.push({ phrase: cliche, count: count });
+      }
+    }
+
+    return {
+      readingLevel: fkgl,
+      sentences: numSentences,
+      words: numWords,
+      cliches: clichesFound,
+      wordFrequencies: sortedFreqs
+    };
+  } catch (error) {
+    throw new Error('Analysis failed: ' + error.message);
+  }
+}

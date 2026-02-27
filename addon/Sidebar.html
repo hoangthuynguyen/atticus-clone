@@ -1,14 +1,28 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <base target="_top">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    #app-frame { width: 100%; height: 100vh; border: none; display: none; }
+    body {
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    #app-frame {
+      width: 100%;
+      height: 100vh;
+      border: none;
+      display: none;
+    }
 
     .loading {
       display: flex;
@@ -22,17 +36,29 @@
     }
 
     .spinner {
-      width: 40px; height: 40px;
+      width: 40px;
+      height: 40px;
       border: 3px solid #e2e8f0;
       border-top-color: #3b82f6;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
 
-    .loading-text { font-size: 14px; font-weight: 500; }
-    .loading-sub { font-size: 12px; color: #94a3b8; }
+    .loading-text {
+      font-size: 14px;
+      font-weight: 500;
+    }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-sub {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     .error {
       display: none;
@@ -44,9 +70,21 @@
       text-align: center;
       gap: 12px;
     }
-    .error-icon { font-size: 48px; }
-    .error-text { color: #ef4444; font-weight: 600; }
-    .error-detail { color: #64748b; font-size: 13px; }
+
+    .error-icon {
+      font-size: 48px;
+    }
+
+    .error-text {
+      color: #ef4444;
+      font-weight: 600;
+    }
+
+    .error-detail {
+      color: #64748b;
+      font-size: 13px;
+    }
+
     .retry-btn {
       margin-top: 8px;
       padding: 8px 24px;
@@ -57,9 +95,13 @@
       cursor: pointer;
       font-size: 14px;
     }
-    .retry-btn:hover { background: #2563eb; }
+
+    .retry-btn:hover {
+      background: #2563eb;
+    }
   </style>
 </head>
+
 <body>
 
   <!-- Loading State -->
@@ -73,7 +115,8 @@
   <div class="error" id="error-view">
     <div class="error-icon">!</div>
     <div class="error-text">Failed to load</div>
-    <div class="error-detail" id="error-detail">Could not connect to Atticus. Please check your internet connection.</div>
+    <div class="error-detail" id="error-detail">Could not connect to Atticus. Please check your internet connection.
+    </div>
     <button class="retry-btn" onclick="loadApp()">Retry</button>
   </div>
 
@@ -81,7 +124,7 @@
   <iframe id="app-frame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
 
   <script>
-    const FRONTEND_URL = 'https://atticus.pages.dev';
+    const FRONTEND_URL = 'https://atticus-clone.pages.dev';
     const LOAD_TIMEOUT = 15000; // 15 seconds
 
     const frame = document.getElementById('app-frame');
@@ -96,14 +139,14 @@
 
       frame.src = FRONTEND_URL + '/sidebar';
 
-      frame.onload = function() {
+      frame.onload = function () {
         clearTimeout(loadTimer);
         loader.style.display = 'none';
         frame.style.display = 'block';
       };
 
       // Timeout fallback
-      loadTimer = setTimeout(function() {
+      loadTimer = setTimeout(function () {
         if (frame.style.display === 'none') {
           showError('Loading timed out. The server may be starting up (cold start). Please try again in 30 seconds.');
         }
@@ -124,9 +167,9 @@
     // We forward calls to google.script.run and send results back.
     // =========================================================================
 
-    window.addEventListener('message', function(event) {
+    window.addEventListener('message', function (event) {
       // Security: only accept messages from our frontend
-      if (!event.origin.includes('atticus.pages.dev') && !event.origin.includes('localhost')) {
+      if (!event.origin.includes('atticus-clone.pages.dev') && !event.origin.includes('atticus.pages.dev') && !event.origin.includes('localhost')) {
         return;
       }
 
@@ -149,14 +192,14 @@
 
         // Build the runner
         var runner = google.script.run
-          .withSuccessHandler(function(result) {
+          .withSuccessHandler(function (result) {
             frame.contentWindow.postMessage({
               type: 'GAS_RESULT',
               callbackId: callbackId,
               result: result
             }, '*');
           })
-          .withFailureHandler(function(error) {
+          .withFailureHandler(function (error) {
             frame.contentWindow.postMessage({
               type: 'GAS_ERROR',
               callbackId: callbackId,
@@ -189,4 +232,5 @@
     loadApp();
   </script>
 </body>
+
 </html>

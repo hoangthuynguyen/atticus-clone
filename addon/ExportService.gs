@@ -106,7 +106,7 @@ function exportEpub(settings) {
     var result = callExportAPI('/export/epub', {
       docContent: content.html,
       docId: content.metadata.id,
-      metadata: content.metadata,
+      metadata: Object.assign({}, content.metadata, settings.metadataOverrides || {}),
       theme: settings.theme || {},
       settings: {
         dropCaps: settings.dropCaps || false,
@@ -132,7 +132,7 @@ function exportPdf(settings) {
     var result = callExportAPI('/export/pdf', {
       docContent: content.html,
       docId: content.metadata.id,
-      metadata: content.metadata,
+      metadata: Object.assign({}, content.metadata, settings.metadataOverrides || {}),
       trimSize: settings.trimSize || '6x9',
       theme: settings.theme || {},
       settings: {
@@ -159,6 +159,7 @@ function exportDocx(settings) {
     var result = callExportAPI('/export/docx', {
       docContent: content.html,
       docId: content.metadata.id,
+      metadata: Object.assign({}, content.metadata, settings.metadataOverrides || {}),
       theme: settings.theme || {},
     });
     return result;
@@ -299,9 +300,41 @@ function getFormattedTextHtml_(element) {
 }
 
 function convertTableToHtml_(table) {
-  var html = '<table>\n';
   var rows = table.getNumRows();
+  var cols = rows > 0 ? table.getRow(0).getNumCells() : 0;
 
+  // Detect 1x1 tables (Callouts or Text Messages)
+  if (rows === 1 && cols === 1) {
+    var cell = table.getRow(0).getCell(0);
+    var bgColor = cell.getBackgroundColor();
+    var htmlContent = '';
+    
+    // Convert cell paragraphs to HTML
+    var numChildren = cell.getNumChildren();
+    for (var i = 0; i < numChildren; i++) {
+      var child = cell.getChild(i);
+      if (child.getType() === DocumentApp.ElementType.PARAGRAPH) {
+        htmlContent += convertParagraphToHtml_(child.asParagraph());
+      }
+    }
+
+    // Callout Box Backgrounds
+    var calloutColors = ['#eff6ff', '#fffbeb', '#f0fdf4', '#f8fafc', '#EFF6FF', '#FFFBEB', '#F0FDF4', '#F8FAFC'];
+    if (calloutColors.indexOf(bgColor) !== -1) {
+      return '<div class="callout-box" style="background-color: ' + bgColor + ';">\n' + htmlContent + '\n</div>\n';
+    }
+
+    // Text Message Backgrounds (#DCF8C6 sent, #FFFFFF received)
+    if (bgColor === '#DCF8C6' || bgColor === '#dcf8c6') {
+      return '<div class="text-msg-container"><div class="text-msg text-msg-sent">\n' + htmlContent + '\n</div></div>\n';
+    } else if (table.getBorderWidth() === 0 && (bgColor === '#FFFFFF' || bgColor === '#ffffff' || bgColor === null)) {
+      // Received text message (no border, white bg)
+      return '<div class="text-msg-container"><div class="text-msg text-msg-received">\n' + htmlContent + '\n</div></div>\n';
+    }
+  }
+
+  // Regular Table fallback
+  var html = '<table>\n';
   for (var r = 0; r < rows; r++) {
     html += '<tr>';
     var row = table.getRow(r);
@@ -312,7 +345,6 @@ function convertTableToHtml_(table) {
     }
     html += '</tr>\n';
   }
-
   html += '</table>\n';
   return html;
 }
