@@ -203,11 +203,7 @@ export function PreviewerPanel() {
     try {
       const result = await callGas<{ html: string }>('getDocumentContent');
       if (result?.html) {
-        // Strip to first ~1000 chars of text for preview
-        const div = document.createElement('div');
-        div.innerHTML = result.html;
-        const text = div.textContent || '';
-        setPreviewContent(text.slice(0, 1500));
+        setPreviewContent(result.html);
       }
     } catch {
       // Silently fail — use sample text
@@ -249,20 +245,21 @@ export function PreviewerPanel() {
     filter: selectedDevice.eink ? 'grayscale(100%) contrast(1.05)' : 'none',
     border: selectedDevice.category === 'print' ? '1px solid #ccc' : '1px solid #e2e8f0',
     borderRadius: selectedDevice.category === 'print' ? '2px' : '4px',
-    overflow: 'hidden',
+    overflowY: 'auto' as const, // ALLOW SCROLLING within the device
+    overflowX: 'hidden' as const,
     boxShadow: selectedDevice.category === 'print'
       ? '2px 2px 8px rgba(0,0,0,0.15)'
       : '0 1px 4px rgba(0,0,0,0.1)',
-    position: 'relative',
+    position: 'relative' as const,
   };
 
-  const sampleText = previewContent || `The morning sun cast long shadows across the valley as she made her way down the winding path. Each step brought her closer to the village below, where the smell of fresh bread wafted through narrow cobblestone streets.
-
-She paused at the old stone bridge, watching the water rush beneath. It had been three years since she had last stood here, three years since everything changed.
-
-The inn was exactly as she remembered it. The same creaking door, the same worn wooden bar, the same faded paintings on the walls. Mrs. Hendricks stood behind the counter, her silver hair pulled into the same tight bun.`;
-
-  const paragraphs = sampleText.split('\n').filter((p) => p.trim());
+  const contentHtml = previewContent || `
+    <h1>Chapter One</h1>
+    <p>The morning sun cast long shadows across the valley as she made her way down the winding path. Each step brought her closer to the village below, where the smell of fresh bread wafted through narrow cobblestone streets.</p>
+    <p>She paused at the old stone bridge, watching the water rush beneath. It had been three years since she had last stood here, three years since everything changed.</p>
+    <div style="text-align: center; margin: 1.5em 0; letter-spacing: 0.3em; color: #666;">* * *</div>
+    <p>The inn was exactly as she remembered it. The same creaking door, the same worn wooden bar, the same faded paintings on the walls. Mrs. Hendricks stood behind the counter, her silver hair pulled into the same tight bun.</p>
+  `;
 
   const filteredDevices = DEVICES.filter((d) => d.category === activeCategory);
   const categories = [...new Set(DEVICES.map((d) => d.category))];
@@ -387,47 +384,27 @@ The inn was exactly as she remembered it. The same creaking door, the same worn 
         className="overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-2 flex justify-center"
         style={{ minHeight: Math.min(deviceH * scale, maxHeight) + 16 }}
       >
-        <div style={previewStyles}>
-          {/* Chapter heading */}
-          <h1
-            style={{
-              fontSize: `${previewFontSize * 1.8}px`,
-              fontWeight: 'bold',
-              fontFamily: selectedTheme.headingFont,
-              color: selectedDevice.eink ? '#1a1a1a' : selectedTheme.headingColor,
-              textAlign: 'center',
-              margin: '1.5em 0 0.8em',
-              lineHeight: 1.2,
-            }}
-          >
-            Chapter One
-          </h1>
+        <div style={previewStyles} className="preview-container">
+          <style>{`
+            .preview-container h1 { font-family: ${selectedTheme.headingFont}; font-size: ${previewFontSize * 1.8}px; font-weight: bold; color: ${selectedDevice.eink ? '#1a1a1a' : selectedTheme.headingColor}; text-align: center; margin: 1.5em 0 0.8em; line-height: 1.2; }
+            .preview-container h2 { font-family: ${selectedTheme.headingFont}; font-size: ${previewFontSize * 1.4}px; font-weight: bold; color: ${selectedDevice.eink ? '#1a1a1a' : selectedTheme.headingColor}; margin: 1.2em 0 0.6em; }
+            .preview-container h3 { font-family: ${selectedTheme.headingFont}; font-size: ${previewFontSize * 1.2}px; font-weight: bold; margin: 1em 0 0.5em; }
+            .preview-container p { text-indent: 1.5em; margin: 0 0 0.5em; text-align: ${selectedDevice.css.textAlign || 'left'}; }
+            .preview-container h1 + p, .preview-container h2 + p { text-indent: 0; }
+            .preview-container img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
+            .preview-container .callout-box { border: 2px solid ${selectedTheme.headingColor}; border-radius: 8px; padding: 1em; margin: 1em 0; background-color: rgba(0,0,0,0.03); }
+            .preview-container .text-msg-container { margin: 1em 0; display: flow-root; }
+            .preview-container .text-msg { padding: 0.6em 1em; border-radius: 1em; max-width: 80%; }
+            .preview-container .text-msg-sent { background: #007AFF; color: white; float: right; border-bottom-right-radius: 0.3em; margin-left: auto; }
+            .preview-container .text-msg-received { background: #E9E9EB; color: #1a1a1a; float: left; border-bottom-left-radius: 0.3em; }
+            /* Custom scrollbar for simulator */
+            .preview-container::-webkit-scrollbar { width: 4px; }
+            .preview-container::-webkit-scrollbar-track { background: transparent; }
+            .preview-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
+            .preview-container::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.4); }
+          `}</style>
 
-          {/* Paragraphs */}
-          {paragraphs.map((para, i) => (
-            <p
-              key={i}
-              style={{
-                textIndent: i === 0 ? 0 : '1.5em',
-                marginBottom: '0.4em',
-                textAlign: (selectedDevice.css.textAlign as React.CSSProperties['textAlign']) ?? 'left',
-              }}
-            >
-              {para.trim()}
-            </p>
-          ))}
-
-          {/* Scene break */}
-          <p
-            style={{
-              textAlign: 'center',
-              margin: '1.2em 0',
-              letterSpacing: '0.3em',
-              color: selectedDevice.eink ? '#666' : selectedTheme.headingColor,
-            }}
-          >
-            * * *
-          </p>
+          <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
 
           {/* Print-specific: page number */}
           {selectedDevice.category === 'print' && (
@@ -440,6 +417,7 @@ The inn was exactly as she remembered it. The same creaking door, the same worn 
                 textAlign: 'center',
                 fontSize: `${Math.max(previewFontSize - 3, 8)}px`,
                 color: '#999',
+                pointerEvents: 'none',
               }}
             >
               — 1 —

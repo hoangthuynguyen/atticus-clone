@@ -144,6 +144,62 @@ function exportEpub(settings) {
 }
 
 /**
+ * Export multiple documents as a single EPUB Box Set.
+ * @param {object} settings - Export settings containing URLs
+ * @returns {object} { downloadUrl, filename, size, sizeFormatted, chapterCount }
+ */
+function exportBoxSetEpub(settings) {
+  try {
+    var urls = settings.urls || [];
+    if (urls.length === 0) throw new Error("No Google Docs URLs provided.");
+
+    var combinedHtml = "";
+    
+    if (settings.metadataOverrides && settings.metadataOverrides.title) {
+        combinedHtml += "<h1>" + escapeHtml_(settings.metadataOverrides.title) + "</h1>";
+    }
+
+    for (var i = 0; i < urls.length; i++) {
+        var url = urls[i].trim();
+        if (!url) continue;
+        
+        var match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+        var id = match ? match[1] : url;
+        
+        try {
+          var extDoc = DocumentApp.openById(id);
+          var html = convertBodyToHtml_(extDoc.getBody());
+          
+          if (settings.includeBookTitles) {
+             combinedHtml += "<h1 class='boxset-part'>" + escapeHtml_(extDoc.getName()) + "</h1>";
+          }
+          combinedHtml += html;
+        } catch (e) {
+          throw new Error("Could not access document at URL: " + url + ". Ensure you have permission.");
+        }
+    }
+
+    var result = callExportAPI('/export/epub', {
+      docContent: combinedHtml,
+      docId: DocumentApp.getActiveDocument().getId() + '_boxset',
+      metadata: Object.assign({
+         title: "Box Set",
+         author: Session.getActiveUser().getEmail()
+      }, settings.metadataOverrides || {}),
+      theme: settings.theme || {},
+      settings: {
+        dropCaps: settings.dropCaps || false,
+        sceneBreakSymbol: settings.sceneBreakSymbol || '* * *',
+        includeChapters: [],
+      },
+    });
+    return result;
+  } catch (error) {
+    throw new Error('Box Set EPUB export failed: ' + error.message);
+  }
+}
+
+/**
  * Export document as PDF.
  * @param {object} settings - Export settings from sidebar
  * @returns {object} { downloadUrl, filename, pageCount, size, sizeFormatted, trimSize }

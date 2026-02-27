@@ -163,6 +163,7 @@ def render_pdf(html_content, trim_size, theme, settings):
         font-style: italic;
     }}
 
+    /* === Images === */
     img {{
         max-width: 100%;
         height: auto;
@@ -170,6 +171,24 @@ def render_pdf(html_content, trim_size, theme, settings):
         margin: 1em auto;
     }}
 
+    /* === Full Bleed Images === */
+    @page full-bleed {{
+        margin: 0;
+        @bottom-left {{ content: none; }}
+        @bottom-right {{ content: none; }}
+        @bottom-center {{ content: none; }}
+        @top-center {{ content: none; }}
+    }}
+    img[alt*="[FULL_BLEED]"] {{
+        page: full-bleed;
+        width: 100vw;
+        height: 100vh;
+        max-width: none;
+        max-height: none;
+        margin: 0;
+        object-fit: cover;
+    }}
+    
     /* === Scene Breaks === */
     hr {{
         border: none;

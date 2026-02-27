@@ -32,7 +32,7 @@ const CALLOUT_STYLES = [
   { label: 'Quote', bg: '#F8FAFC', border: '#64748B', text: '#334155', icon: '"' },
 ];
 
-type Section = 'scene-breaks' | 'callout' | 'text-message' | 'chapter-titles' | 'front-matter' | 'drop-caps';
+type Section = 'scene-breaks' | 'callout' | 'text-message' | 'chapter-titles' | 'front-matter' | 'drop-caps' | 'image';
 
 const SECTIONS: { id: Section; label: string; emoji: string }[] = [
   { id: 'scene-breaks', label: 'Scene Breaks', emoji: '✦' },
@@ -41,6 +41,7 @@ const SECTIONS: { id: Section; label: string; emoji: string }[] = [
   { id: 'chapter-titles', label: 'Chapters', emoji: '🔖' },
   { id: 'front-matter', label: 'Front Matter', emoji: '📄' },
   { id: 'drop-caps', label: 'Drop Caps', emoji: 'D' },
+  { id: 'image', label: 'Image', emoji: '🖼' },
 ];
 
 export function FormattingPanel() {
@@ -372,6 +373,30 @@ export function FormattingPanel() {
             >
               {loading ? 'Applying…' : 'Apply Drop Cap'}
             </button>
+          </div>
+        )}
+
+        {/* Image */}
+        {activeSection === 'image' && (
+          <div className="space-y-3 p-1">
+            <p className="text-[11px] text-gray-500 mb-2">Select an image in your document and click to toggle Full Bleed mode.</p>
+            <div className="pt-2">
+              <button
+                onClick={() => withStatus(
+                  () => callGas('toggleImageFullBleed').then((res: any) => {
+                    if (res && res.message) {
+                      setStatus({ text: res.message, ok: true });
+                    }
+                  }),
+                  `Image format updated!`
+                )}
+                disabled={loading}
+                className="w-full py-2 bg-atticus-600 text-white rounded-md text-xs font-bold disabled:opacity-50 hover:bg-atticus-700 transition-colors shadow-sm"
+              >
+                {loading ? 'Processing...' : 'Toggle Full Bleed Image (PDF)'}
+              </button>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-2 text-center">Full bleed makes the image expand to the page edges upon PDF export.</p>
           </div>
         )}
       </div>

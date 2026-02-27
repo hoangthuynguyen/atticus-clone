@@ -109,6 +109,68 @@ function applyDropCapStyle(options) {
 }
 
 // =============================================================================
+// Image Formatting
+// =============================================================================
+
+/**
+ * Toggle Full Bleed setting for the currently selected image by appending [FULL_BLEED] to its Alt Title.
+ */
+function toggleImageFullBleed() {
+  try {
+    var doc = DocumentApp.getActiveDocument();
+    var cursor = doc.getCursor();
+    var selection = doc.getSelection();
+    
+    var image = null;
+
+    if (selection) {
+      var elements = selection.getRangeElements();
+      for (var i = 0; i < elements.length; i++) {
+        var el = elements[i].getElement();
+        if (el.getType() === DocumentApp.ElementType.INLINE_IMAGE) {
+          image = el.asInlineImage();
+          break;
+        } else if (el.getType() === DocumentApp.ElementType.TEXT) {
+          // Sometimes wrapped inside text? In Docs inline images are separate elements under Paragraph
+        }
+      }
+    } 
+    
+    if (!image && cursor) {
+      var element = cursor.getElement();
+      if (element.getType() === DocumentApp.ElementType.INLINE_IMAGE) {
+         image = element.asInlineImage();
+      } else if (element.getType() === DocumentApp.ElementType.PARAGRAPH) {
+         // check siblings
+         var para = element.asParagraph();
+         for (var j=0; j<para.getNumChildren(); j++) {
+            if (para.getChild(j).getType() === DocumentApp.ElementType.INLINE_IMAGE) {
+              image = para.getChild(j).asInlineImage();
+              break;
+            }
+         }
+      }
+    }
+
+    if (!image) throw new Error('Please select an image or place cursor next to it first.');
+
+    var altTitle = image.getAltTitle() || '';
+    var isFullBleed = altTitle.indexOf('[FULL_BLEED]') !== -1;
+
+    if (isFullBleed) {
+      image.setAltTitle(altTitle.replace('[FULL_BLEED]', '').trim());
+      return { success: true, message: 'Full bleed setting removed from image.' };
+    } else {
+      image.setAltTitle((altTitle + ' [FULL_BLEED]').trim());
+      return { success: true, message: 'Image successfully set to Full Bleed mode!' };
+    }
+
+  } catch (error) {
+    throw new Error('Full bleed failed: ' + error.message);
+  }
+}
+
+// =============================================================================
 // Text Message Bubbles
 // =============================================================================
 
