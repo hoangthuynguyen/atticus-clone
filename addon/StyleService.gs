@@ -241,6 +241,67 @@ function insertCalloutBox(options) {
 }
 
 // =============================================================================
+// Chapter Headings
+// =============================================================================
+
+/**
+ * Insert a chapter heading with an optional subtitle.
+ * @param {object} options - { title, subtitle, align }
+ */
+function insertChapterHeading(options) {
+  try {
+    var doc = DocumentApp.getActiveDocument();
+    var body = doc.getBody();
+    var cursor = doc.getCursor();
+
+    if (!cursor) throw new Error('Place your cursor where you want the chapter title.');
+
+    var element = cursor.getElement();
+    var paragraph = element;
+    while (paragraph && paragraph.getType() !== DocumentApp.ElementType.PARAGRAPH) {
+      paragraph = paragraph.getParent();
+    }
+
+    var insertIndex = body.getChildIndex(paragraph);
+
+    var align;
+    switch(options.align) {
+      case 'left': align = DocumentApp.HorizontalAlignment.LEFT; break;
+      case 'right': align = DocumentApp.HorizontalAlignment.RIGHT; break;
+      default: align = DocumentApp.HorizontalAlignment.CENTER; break;
+    }
+
+    // Insert Title
+    var titlePara = body.insertParagraph(insertIndex, options.title || 'Chapter 1');
+    titlePara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+    titlePara.setAlignment(align);
+    titlePara.setSpacingBefore(100);
+
+    // Insert Subtitle
+    if (options.subtitle) {
+      var subPara = body.insertParagraph(insertIndex + 1, options.subtitle);
+      subPara.setHeading(DocumentApp.ParagraphHeading.SUBTITLE);
+      subPara.setAlignment(align);
+      subPara.editAsText().setFontSize(16);
+      subPara.editAsText().setItalic(true);
+      subPara.editAsText().setForegroundColor('#555555');
+      subPara.setSpacingAfter(40);
+    } else {
+      titlePara.setSpacingAfter(40);
+    }
+
+    // Clean up empty paragraph if the cursor was on one
+    if (paragraph.asParagraph().getText() === '') {
+      body.removeChild(paragraph);
+    }
+
+    return { success: true };
+  } catch (error) {
+    throw new Error('Insert chapter heading failed: ' + error.message);
+  }
+}
+
+// =============================================================================
 // Theme Application
 // =============================================================================
 
@@ -319,46 +380,78 @@ function getCurrentTheme() {
 // =============================================================================
 
 /**
- * Insert front matter template.
- * @param {string} type - 'title-page', 'copyright', 'dedication', 'toc'
+ * Insert front matter or back matter.
+ * @param {string} type - 'title-page', 'copyright', 'dedication', 'about-author', 'also-by', 'acknowledgments'
  * @param {object} data - Template data
+ * @param {string} position - 'front' or 'back' (default is 'front')
  */
-function insertFrontMatter(type, data) {
+function insertFrontMatter(type, data, position) {
   try {
     var doc = DocumentApp.getActiveDocument();
     var body = doc.getBody();
 
-    // Insert at the beginning of the document
-    var insertIndex = 0;
+    // Determine insertion position
+    var isFront = position !== 'back';
+    
+    // For inserting at the beginning (front)
+    var insertIndex = 0; 
+
+    // Helper to insert a paragraph based on position
+    function addPara(text) {
+      if (isFront) {
+        var p = body.insertParagraph(insertIndex++, text);
+        return p;
+      } else {
+        var p = body.appendParagraph(text);
+        return p;
+      }
+    }
+
+    // Helper to insert a page break
+    function addPageBreak() {
+      if (isFront) {
+        var p = body.insertParagraph(insertIndex++, '');
+        p.setPageBreakBefore(true);
+        return p;
+      } else {
+        var p = body.appendPageBreak();
+        return p;
+      }
+    }
+
+    // Front: page break follows the content. Back: page break precedes the content.
+    if (!isFront) {
+      addPageBreak(); // Start new page for back matter
+    }
 
     switch (type) {
       case 'title-page':
-        var titlePara = body.insertParagraph(insertIndex, data.title || 'Book Title');
+        var titlePara = addPara(data.title || 'Book Title');
         titlePara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
         titlePara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-        titlePara.setSpacingBefore(200);
+        titlePara.setSpacingBefore(100);
 
         if (data.subtitle) {
-          var subPara = body.insertParagraph(insertIndex + 1, data.subtitle);
+          var subPara = addPara(data.subtitle);
           subPara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
           subPara.editAsText().setFontSize(16);
           subPara.editAsText().setItalic(true);
         }
 
-        var authorPara = body.insertParagraph(insertIndex + (data.subtitle ? 2 : 1), data.author || 'Author Name');
+        var authorPara = addPara(data.author || 'Author Name');
         authorPara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
         authorPara.editAsText().setFontSize(14);
         authorPara.setSpacingBefore(40);
-
-        // Page break after title page
-        body.insertParagraph(insertIndex + (data.subtitle ? 3 : 2), '').setPageBreakBefore(true);
+        
+        if (isFront) addPageBreak();
         break;
 
       case 'copyright':
-        var cpPara = body.insertParagraph(insertIndex, 'Copyright');
+        var cpPara = addPara('Copyright');
         cpPara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+        cpPara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
 
-        var year = new Date().getFullYear();
+        var year = data.year || new Date().getFullYear();
         var cpText = 'Copyright \u00A9 ' + year + ' ' + (data.author || 'Author Name') + '\n\n' +
           'All rights reserved. No part of this publication may be reproduced, ' +
           'distributed, or transmitted in any form or by any means without the prior ' +
@@ -367,52 +460,66 @@ function insertFrontMatter(type, data) {
           (data.publisher ? 'Published by ' + data.publisher + '\n' : '') +
           (data.edition ? data.edition + '\n' : '');
 
-        body.insertParagraph(insertIndex + 1, cpText);
-        body.insertParagraph(insertIndex + 2, '').setPageBreakBefore(true);
+        var bodyPara = addPara(cpText);
+        bodyPara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+        
+        if (isFront) addPageBreak();
         break;
 
       case 'dedication':
-        var dedPara = body.insertParagraph(insertIndex, 'Dedication');
+        var dedPara = addPara('Dedication');
         dedPara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+        dedPara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
 
-        var dedText = body.insertParagraph(insertIndex + 1, data.text || 'For...');
+        var dedText = addPara(data.text || 'For...');
         dedText.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
         dedText.editAsText().setItalic(true);
-        dedText.setSpacingBefore(100);
+        dedText.setSpacingBefore(80);
 
-        body.insertParagraph(insertIndex + 2, '').setPageBreakBefore(true);
+        if (isFront) addPageBreak();
         break;
 
       case 'about-author':
-        var aboutPara = body.insertParagraph(insertIndex, 'About the Author');
+        var aboutPara = addPara('About the Author');
         aboutPara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
-        var aboutText = body.insertParagraph(insertIndex + 1, 'Write about yourself here...');
-        body.insertParagraph(insertIndex + 2, '').setPageBreakBefore(true);
+        
+        var aboutText = addPara(data.text || 'Write about yourself here...');
+        
+        if (isFront) addPageBreak();
         break;
 
       case 'also-by':
-        var alsoPara = body.insertParagraph(insertIndex, 'Also By This Author');
+        var alsoPara = addPara('Also By ' + (data.author || 'This Author'));
         alsoPara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
-        var bookList = body.insertListItem(insertIndex + 1, 'Book 1');
-        bookList.setGlyphType(DocumentApp.GlyphType.BULLET);
-        var bookList2 = body.insertListItem(insertIndex + 2, 'Book 2');
-        bookList2.setGlyphType(DocumentApp.GlyphType.BULLET);
-        body.insertParagraph(insertIndex + 3, '').setPageBreakBefore(true);
+        alsoPara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+        
+        var books = data.books ? data.books.split('\\n') : ['Book 1', 'Book 2'];
+        for (var i = 0; i < books.length; i++) {
+          if (books[i].trim()) {
+            var bPara = addPara(books[i].trim());
+            bPara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+            bPara.editAsText().setItalic(true);
+            bPara.setSpacingBefore(10);
+          }
+        }
+        
+        if (isFront) addPageBreak();
         break;
 
       case 'acknowledgments':
-        var ackPara = body.insertParagraph(insertIndex, 'Acknowledgments');
+        var ackPara = addPara('Acknowledgments');
         ackPara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
-        var ackText = body.insertParagraph(insertIndex + 1, 'I would like to thank...');
-        body.insertParagraph(insertIndex + 2, '').setPageBreakBefore(true);
+        var ackBody = addPara(data.text || 'I would like to thank...');
+        
+        if (isFront) addPageBreak();
         break;
 
       default:
-        throw new Error('Unknown front matter type: ' + type);
+        throw new Error('Unknown matter type: ' + type);
     }
 
-    return { success: true, type: type };
+    return { success: true, type: type, position: position };
   } catch (error) {
-    throw new Error('Insert front matter failed: ' + error.message);
+    throw new Error('Insert ' + position + ' matter failed: ' + error.message);
   }
 }

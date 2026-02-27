@@ -17,35 +17,43 @@ const SCENE_BREAK_SYMBOLS = [
 ];
 
 const FRONT_MATTER_TYPES = [
-  { id: 'title-page',     label: 'Title Page',      emoji: '📰', type: 'front' },
-  { id: 'copyright',      label: 'Copyright Page',  emoji: '©',  type: 'front' },
-  { id: 'dedication',     label: 'Dedication',      emoji: '♡',  type: 'front' },
-  { id: 'about-author',   label: 'About the Author',emoji: '👤', type: 'back' },
-  { id: 'also-by',        label: 'Also By',         emoji: '📚', type: 'back' },
-  { id: 'acknowledgments',label: 'Acknowledgments', emoji: '🙏', type: 'back' },
+  { id: 'title-page', label: 'Title Page', emoji: '📰', type: 'front' },
+  { id: 'copyright', label: 'Copyright Page', emoji: '©', type: 'front' },
+  { id: 'dedication', label: 'Dedication', emoji: '♡', type: 'front' },
+  { id: 'about-author', label: 'About the Author', emoji: '👤', type: 'back' },
+  { id: 'also-by', label: 'Also By', emoji: '📚', type: 'back' },
+  { id: 'acknowledgments', label: 'Acknowledgments', emoji: '🙏', type: 'back' },
 ];
 
 const CALLOUT_STYLES = [
-  { label: 'Info',    bg: '#EFF6FF', border: '#1E40AF', text: '#1E3A8A', icon: 'ℹ' },
+  { label: 'Info', bg: '#EFF6FF', border: '#1E40AF', text: '#1E3A8A', icon: 'ℹ' },
   { label: 'Warning', bg: '#FFFBEB', border: '#D97706', text: '#92400E', icon: '⚠' },
   { label: 'Success', bg: '#F0FDF4', border: '#16A34A', text: '#14532D', icon: '✓' },
-  { label: 'Quote',   bg: '#F8FAFC', border: '#64748B', text: '#334155', icon: '"' },
+  { label: 'Quote', bg: '#F8FAFC', border: '#64748B', text: '#334155', icon: '"' },
 ];
 
-type Section = 'scene-breaks' | 'callout' | 'text-message' | 'front-matter' | 'drop-caps';
+type Section = 'scene-breaks' | 'callout' | 'text-message' | 'chapter-titles' | 'front-matter' | 'drop-caps';
 
 const SECTIONS: { id: Section; label: string; emoji: string }[] = [
-  { id: 'scene-breaks',  label: 'Scene Breaks',    emoji: '✦' },
-  { id: 'callout',       label: 'Call-Out',         emoji: '▣' },
-  { id: 'text-message',  label: 'Text Msgs',        emoji: '💬' },
-  { id: 'front-matter',  label: 'Front Matter',     emoji: '📄' },
-  { id: 'drop-caps',     label: 'Drop Caps',        emoji: 'D' },
+  { id: 'scene-breaks', label: 'Scene Breaks', emoji: '✦' },
+  { id: 'callout', label: 'Call-Out', emoji: '▣' },
+  { id: 'text-message', label: 'Text Msgs', emoji: '💬' },
+  { id: 'chapter-titles', label: 'Chapters', emoji: '🔖' },
+  { id: 'front-matter', label: 'Front Matter', emoji: '📄' },
+  { id: 'drop-caps', label: 'Drop Caps', emoji: 'D' },
 ];
 
 export function FormattingPanel() {
   const [activeSection, setActiveSection] = useState<Section>('scene-breaks');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<{ text: string; ok: boolean } | null>(null);
+
+  // Front Matter Form State
+  const [activeFmType, setActiveFmType] = useState<string | null>(null);
+  const [fmData, setFmData] = useState<any>({});
+
+  // Chapter Titles State
+  const [chapterData, setChapterData] = useState({ title: 'Chapter 1', subtitle: '', align: 'center' });
 
   async function withStatus<T>(fn: () => Promise<T>, successMsg: string) {
     setLoading(true);
@@ -143,10 +151,10 @@ export function FormattingPanel() {
                     <span className="text-xs font-semibold" style={{ color: style.text }}>{style.label}</span>
                   </div>
                   <p className="text-[10px]" style={{ color: style.border }}>
-                    {style.label === 'Info'    ? 'For informational notes' :
-                     style.label === 'Warning' ? 'For cautions & alerts' :
-                     style.label === 'Success' ? 'For positive highlights' :
-                     'For block quotations'}
+                    {style.label === 'Info' ? 'For informational notes' :
+                      style.label === 'Warning' ? 'For cautions & alerts' :
+                        style.label === 'Success' ? 'For positive highlights' :
+                          'For block quotations'}
                   </p>
                 </button>
               ))}
@@ -177,7 +185,7 @@ export function FormattingPanel() {
               onClick={() => withStatus(
                 () => callGas('insertTextMessages', [
                   { sender: 'Alice', text: 'Hey, are you coming?', isSent: false },
-                  { sender: 'Me',    text: 'On my way!',           isSent: true },
+                  { sender: 'Me', text: 'On my way!', isSent: true },
                 ]),
                 'Text messages inserted'
               )}
@@ -189,59 +197,153 @@ export function FormattingPanel() {
           </div>
         )}
 
+        {/* Chapter Titles */}
+        {activeSection === 'chapter-titles' && (
+          <div className="space-y-3 p-1">
+            <p className="text-[11px] text-gray-500 mb-2">Insert a styled Chapter Title and Subtitle at cursor.</p>
+            <div className="space-y-2">
+              <div>
+                <label className="text-[10px] font-semibold text-gray-600 block mb-1">Chapter Heading</label>
+                <input type="text" placeholder="e.g. Chapter 1" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={chapterData.title} onChange={e => setChapterData({ ...chapterData, title: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold text-gray-600 block mb-1">Subtitle (Optional)</label>
+                <input type="text" placeholder="e.g. The Boy Who Lived" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={chapterData.subtitle} onChange={e => setChapterData({ ...chapterData, subtitle: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold text-gray-600 block mb-1">Alignment</label>
+                <select className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none bg-white" value={chapterData.align} onChange={e => setChapterData({ ...chapterData, align: e.target.value })}>
+                  <option value="left">Left</option>
+                  <option value="center">Center</option>
+                  <option value="right">Right</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <button
+                onClick={() => withStatus(
+                  () => callGas('insertChapterHeading', chapterData),
+                  `Chapter heading inserted!`
+                )}
+                disabled={loading}
+                className="w-full py-2 bg-atticus-600 text-white rounded-md text-xs font-bold disabled:opacity-50 hover:bg-atticus-700 transition-colors shadow-sm"
+              >
+                {loading ? 'Inserting...' : 'Insert Chapter'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Front/Back Matter */}
         {activeSection === 'front-matter' && (
           <div className="space-y-3">
-            <div>
-              <p className="text-[11px] font-semibold text-gray-600 mb-1.5">Front Matter</p>
-              <div className="space-y-1">
-                {FRONT_MATTER_TYPES.filter(m => m.type === 'front').map((fm) => (
+            {!activeFmType ? (
+              <>
+                <div>
+                  <p className="text-[11px] font-semibold text-gray-600 mb-1.5">Front Matter</p>
+                  <div className="space-y-1">
+                    {FRONT_MATTER_TYPES.filter(m => m.type === 'front').map((fm) => (
+                      <button
+                        key={fm.id}
+                        onClick={() => { setActiveFmType(fm.id); setFmData({}); }}
+                        className="w-full p-2 text-left bg-white border border-gray-200 rounded-md text-xs hover:bg-gray-50 flex items-center gap-2 transition-colors hover:border-gray-300"
+                      >
+                        <span>{fm.emoji}</span>
+                        <span className="text-gray-700">{fm.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold text-gray-600 mb-1.5">Back Matter</p>
+                  <div className="space-y-1">
+                    {FRONT_MATTER_TYPES.filter(m => m.type === 'back').map((fm) => (
+                      <button
+                        key={fm.id}
+                        onClick={() => { setActiveFmType(fm.id); setFmData({}); }}
+                        className="w-full p-2 text-left bg-white border border-gray-200 rounded-md text-xs hover:bg-gray-50 flex items-center gap-2 transition-colors hover:border-gray-300"
+                      >
+                        <span>{fm.emoji}</span>
+                        <span className="text-gray-700">{fm.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-3 bg-gray-50 p-2 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 mb-3">
                   <button
-                    key={fm.id}
-                    onClick={() => withStatus(
-                      () => callGas('insertFrontMatter', fm.id, {
-                        title: 'Book Title',
-                        author: 'Author Name',
-                        subtitle: '',
-                      }),
-                      `${fm.label} inserted`
-                    )}
-                    disabled={loading}
-                    className="w-full p-2 text-left bg-white border border-gray-200 rounded-md text-xs
-                      hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-colors
-                      flex items-center gap-2"
+                    onClick={() => setActiveFmType(null)}
+                    className="p-1 rounded-md hover:bg-gray-200 text-gray-600 flex items-center justify-center transition-colors"
+                    title="Back"
                   >
-                    <span>{fm.emoji}</span>
-                    <span className="text-gray-700">{fm.label}</span>
+                    ←
                   </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold text-gray-600 mb-1.5">Back Matter</p>
-              <div className="space-y-1">
-                {FRONT_MATTER_TYPES.filter(m => m.type === 'back').map((fm) => (
+                  <span className="text-xs font-semibold text-gray-800">
+                    {FRONT_MATTER_TYPES.find(m => m.id === activeFmType)?.label} Setup
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {activeFmType === 'title-page' && (
+                    <>
+                      <input type="text" placeholder="Book Title" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.title || ''} onChange={e => setFmData({ ...fmData, title: e.target.value })} />
+                      <input type="text" placeholder="Subtitle (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.subtitle || ''} onChange={e => setFmData({ ...fmData, subtitle: e.target.value })} />
+                      <input type="text" placeholder="Author Name" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.author || ''} onChange={e => setFmData({ ...fmData, author: e.target.value })} />
+                    </>
+                  )}
+                  {activeFmType === 'copyright' && (
+                    <>
+                      <input type="text" placeholder="Author Name" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.author || ''} onChange={e => setFmData({ ...fmData, author: e.target.value })} />
+                      <input type="text" placeholder="Year (e.g. 2026)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.year || ''} onChange={e => setFmData({ ...fmData, year: e.target.value })} />
+                      <input type="text" placeholder="ISBN (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.isbn || ''} onChange={e => setFmData({ ...fmData, isbn: e.target.value })} />
+                      <input type="text" placeholder="Publisher (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.publisher || ''} onChange={e => setFmData({ ...fmData, publisher: e.target.value })} />
+                      <input type="text" placeholder="Edition (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.edition || ''} onChange={e => setFmData({ ...fmData, edition: e.target.value })} />
+                    </>
+                  )}
+                  {activeFmType === 'dedication' && (
+                    <textarea placeholder="For Mom and Dad, who always believed in me..." className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none h-24 resize-none" value={fmData.text || ''} onChange={e => setFmData({ ...fmData, text: e.target.value })} />
+                  )}
+                  {activeFmType === 'about-author' && (
+                    <textarea placeholder="Write a short biography about yourself..." className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none h-32 resize-none" value={fmData.text || ''} onChange={e => setFmData({ ...fmData, text: e.target.value })} />
+                  )}
+                  {activeFmType === 'also-by' && (
+                    <>
+                      <input type="text" placeholder="Author Name" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none" value={fmData.author || ''} onChange={e => setFmData({ ...fmData, author: e.target.value })} />
+                      <textarea placeholder="Book 1\nBook 2\nBook 3" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none h-24 resize-none" value={fmData.books || ''} onChange={e => setFmData({ ...fmData, books: e.target.value })} />
+                      <p className="text-[10px] text-gray-500 mt-1 pl-1">Put each book title on a new line</p>
+                    </>
+                  )}
+                  {activeFmType === 'acknowledgments' && (
+                    <textarea placeholder="I would like to thank..." className="w-full text-sm p-2 border border-gray-300 rounded focus:border-atticus-500 focus:ring-1 focus:ring-atticus-500 outline-none h-32 resize-none" value={fmData.text || ''} onChange={e => setFmData({ ...fmData, text: e.target.value })} />
+                  )}
+                </div>
+
+                <div className="pt-2">
                   <button
-                    key={fm.id}
-                    onClick={() => withStatus(
-                      () => callGas('insertFrontMatter', fm.id, {
-                        title: 'Book Title',
-                        author: 'Author Name',
-                        subtitle: '',
-                      }),
-                      `${fm.label} inserted`
-                    )}
+                    onClick={() => {
+                      const fm = FRONT_MATTER_TYPES.find(m => m.id === activeFmType);
+                      if (fm) {
+                        withStatus(
+                          () => callGas('insertFrontMatter', fm.id, fmData, fm.type),
+                          `${fm.label} inserted at the ${fm.type}!`
+                        ).then(() => {
+                          if (!loading && status?.ok !== false) {
+                            setActiveFmType(null);
+                          }
+                        });
+                      }
+                    }}
                     disabled={loading}
-                    className="w-full p-2 text-left bg-white border border-gray-200 rounded-md text-xs
-                      hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-colors
-                      flex items-center gap-2"
+                    className="w-full py-2 bg-atticus-600 text-white rounded-md text-xs font-bold disabled:opacity-50 hover:bg-atticus-700 transition-colors shadow-sm"
                   >
-                    <span>{fm.emoji}</span>
-                    <span className="text-gray-700">{fm.label}</span>
+                    {loading ? 'Inserting...' : 'Insert Page'}
                   </button>
-                ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 

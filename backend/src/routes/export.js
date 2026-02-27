@@ -80,7 +80,11 @@ router.post('/pdf', async (req, res) => {
     const result = await generatePdf(
       docContent,
       trimSize || '6x9',
-      { ...theme, title: (req.body.metadata || {}).title || 'book' },
+      {
+        ...theme,
+        title: (req.body.metadata || {}).title || 'book',
+        author: (req.body.metadata || {}).author || '',
+      },
       settings || {}
     );
 
