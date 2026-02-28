@@ -3,29 +3,43 @@ const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
 // =============================================================================
 // Cloudflare R2 Client (S3-compatible, zero egress fees)
+// Falls back to base64 data URLs when R2 is not configured
 // =============================================================================
 
-const r2 = new S3Client({
-  region: 'auto',
-  endpoint: process.env.R2_ENDPOINT || `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
-  },
-});
+const R2_CONFIGURED = !!(process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY);
+
+let r2;
+if (R2_CONFIGURED) {
+  r2 = new S3Client({
+    region: 'auto',
+    endpoint: process.env.R2_ENDPOINT || `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    },
+  });
+}
 
 const BUCKET = process.env.R2_BUCKET_NAME || 'bookify-exports';
 const SIGNED_URL_EXPIRY = parseInt(process.env.SIGNED_URL_EXPIRY_HOURS || '24') * 3600;
 
 /**
- * Upload an export file to R2 and return a signed download URL
- * @param {Buffer} buffer - File content
- * @param {string} filename - Original filename
- * @param {string} contentType - MIME type
- * @param {string} userId - User ID for organizing files
- * @returns {{ key: string, signedUrl: string, size: number }}
+ * Upload an export file to R2 and return a signed download URL.
+ * Falls back to base64 data URL when R2 is not configured.
  */
 async function uploadExportFile(buffer, filename, contentType, userId = 'anonymous') {
+  // Fallback: return base64 data URL when R2 is not configured
+  if (!R2_CONFIGURED) {
+    console.log(`[R2-Fallback] R2 not configured — returning data URL for ${filename}`);
+    const base64 = buffer.toString('base64');
+    const dataUrl = `data:${contentType};base64,${base64}`;
+    return {
+      key: `local/${filename}`,
+      signedUrl: dataUrl,
+      size: buffer.length,
+    };
+  }
+
   const timestamp = Date.now();
   const key = `exports/${userId}/${timestamp}-${sanitizeFilename(filename)}`;
 
@@ -41,7 +55,6 @@ async function uploadExportFile(buffer, filename, contentType, userId = 'anonymo
     },
   }));
 
-  // Generate signed URL (expires after 24h by default)
   const signedUrl = await getSignedUrl(
     r2,
     new GetObjectCommand({
@@ -60,9 +73,9 @@ async function uploadExportFile(buffer, filename, contentType, userId = 'anonymo
 
 /**
  * Delete an export file from R2
- * @param {string} key - Object key in R2
  */
 async function deleteExportFile(key) {
+  if (!R2_CONFIGURED) return;
   await r2.send(new DeleteObjectCommand({
     Bucket: BUCKET,
     Key: key,
@@ -71,10 +84,9 @@ async function deleteExportFile(key) {
 
 /**
  * Get a fresh signed URL for an existing file
- * @param {string} key - Object key in R2
- * @returns {string} Signed URL
  */
 async function getSignedDownloadUrl(key) {
+  if (!R2_CONFIGURED) return null;
   return getSignedUrl(
     r2,
     new GetObjectCommand({
@@ -99,4 +111,5 @@ module.exports = {
   uploadExportFile,
   deleteExportFile,
   getSignedDownloadUrl,
+  R2_CONFIGURED,
 };
