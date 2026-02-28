@@ -7,7 +7,10 @@ import { StructurePanel } from './components/StructurePanel';
 import { PreviewerPanel } from './components/PreviewerPanel';
 import { VersionManagerPanel } from './components/VersionManagerPanel';
 import { BoxSetPanel } from './components/BoxSetPanel';
-
+import { StoryBiblePanel } from './components/StoryBiblePanel';
+import { AutomationPanel } from './components/AutomationPanel';
+import { DesignPanel } from './components/DesignPanel';
+import { PublishingPanel } from './components/PublishingPanel';
 /* ─── SVG Icon Components ─── */
 const IconExport = () => (
   <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
@@ -156,6 +159,10 @@ export default function App() {
           {activeTab === 'previewer' && <PreviewerPanel />}
           {activeTab === 'boxset' && <BoxSetPanel />}
           {activeTab === 'versions' && <VersionManagerPanel />}
+          {activeTab === 'bible' && <StoryBiblePanel />}
+          {activeTab === 'automation' && <AutomationPanel />}
+          {activeTab === 'design' && <DesignPanel />}
+          {activeTab === 'publishing' && <PublishingPanel />}
         </div>
       </main>
 
