@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-type Tab = 'export' | 'formatting' | 'themes' | 'tools' | 'structure' | 'previewer' | 'versions' | 'boxset';
+type Tab = 'export' | 'formatting' | 'themes' | 'tools' | 'structure' | 'previewer' | 'versions' | 'boxset' | 'bible';
 
 interface AppState {
   activeTab: Tab;
@@ -33,7 +33,7 @@ export const useAppStore = create<AppState>((set) => ({
   activeTab: 'export',
   setActiveTab: (tab) => set({ activeTab: tab }),
 
-  exportFormats: ['epub', 'txt', 'html'],
+  exportFormats: ['epub'],
   toggleExportFormat: (format) => set((state) => ({
     exportFormats: state.exportFormats.includes(format)
       ? state.exportFormats.filter((f) => f !== format)

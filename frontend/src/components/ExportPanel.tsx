@@ -3,39 +3,36 @@ import { useAppStore } from '../store/appStore';
 import { callGas } from '../hooks/useGasBridge';
 
 const TRIM_SIZES = [
-  { value: '5x8', label: '5" × 8"' },
-  { value: '5.06x7.81', label: '5.06" × 7.81"  (B-Format)' },
-  { value: '5.25x8', label: '5.25" × 8"' },
-  { value: '5.5x8.5', label: '5.5" × 8.5"  (Digest)' },
-  { value: '6x9', label: '6" × 9"  ★ Most Common (US Trade)' },
-  { value: '6.14x9.21', label: '6.14" × 9.21"  (Royal)' },
-  { value: '6.69x9.61', label: '6.69" × 9.61"  (Pinched Crown)' },
-  { value: '7x10', label: '7" × 10"  ★ Good for Workbooks' },
-  { value: '7.44x9.69', label: '7.44" × 9.69"  (Crown Quarto)' },
-  { value: '7.5x9.25', label: '7.5" × 9.25"' },
-  { value: '8x10', label: '8" × 10"  ★ Good for Picture Books' },
-  { value: '8.25x6', label: '8.25" × 6"  (Landscape)' },
-  { value: '8.25x8.25', label: '8.25" × 8.25"  (Square)' },
-  { value: '8.5x8.5', label: '8.5" × 8.5"  (Square)' },
-  { value: '8.5x11', label: '8.5" × 11"  (US Letter)' },
-  { value: '8.27x11.69', label: 'A4  (8.27" × 11.69")' },
+  { value: '5x8', label: '5″ × 8″' },
+  { value: '5.06x7.81', label: '5.06″ × 7.81″  B-Format' },
+  { value: '5.25x8', label: '5.25″ × 8″' },
+  { value: '5.5x8.5', label: '5.5″ × 8.5″  Digest' },
+  { value: '6x9', label: '6″ × 9″  ★ US Trade' },
+  { value: '6.14x9.21', label: '6.14″ × 9.21″  Royal' },
+  { value: '6.69x9.61', label: '6.69″ × 9.61″  Pinched Crown' },
+  { value: '7x10', label: '7″ × 10″  Workbook' },
+  { value: '7.44x9.69', label: '7.44″ × 9.69″  Crown Quarto' },
+  { value: '8x10', label: '8″ × 10″  Picture Book' },
+  { value: '8.5x11', label: '8.5″ × 11″  US Letter' },
+  { value: '8.27x11.69', label: 'A4 (8.27″ × 11.69″)' },
 ];
 
-const FORMAT_INFO: Record<string, { desc: string; ext: string; emoji: string }> = {
-  epub: { desc: 'E-readers & digital stores', ext: '.epub', emoji: '📖' },
-  pdf: { desc: 'Print-ready with trim sizes', ext: '.pdf', emoji: '🖨️' },
-  docx: { desc: 'Word-compatible editing', ext: '.docx', emoji: '📝' },
-  txt: { desc: 'Plain text format', ext: '.txt', emoji: '📄' },
-  html: { desc: 'Web page format', ext: '.html', emoji: '🌐' },
+const FORMAT_INFO: Record<string, { desc: string; ext: string; color: string; gradient: string }> = {
+  epub: { desc: 'E-readers & stores', ext: '.epub', color: 'text-violet-600', gradient: 'from-violet-500 to-purple-600' },
+  pdf: { desc: 'Print-ready', ext: '.pdf', color: 'text-rose-600', gradient: 'from-rose-500 to-pink-600' },
+  docx: { desc: 'Word format', ext: '.docx', color: 'text-blue-600', gradient: 'from-blue-500 to-cyan-600' },
+  md: { desc: 'Blog & web', ext: '.md', color: 'text-gray-600', gradient: 'from-gray-500 to-slate-600' },
+  txt: { desc: 'Plain text', ext: '.txt', color: 'text-amber-600', gradient: 'from-amber-500 to-orange-600' },
+  html: { desc: 'Web page', ext: '.html', color: 'text-emerald-600', gradient: 'from-emerald-500 to-teal-600' },
 };
 
 const SCENE_BREAKS = [
   { value: '* * *', label: '* * *' },
   { value: '~ ~ ~', label: '~ ~ ~' },
   { value: '\u2022 \u2022 \u2022', label: '• • •' },
-  { value: '\u2766', label: '\u2766  Floral Heart' },
-  { value: '\u2726', label: '\u2726  Four-point Star' },
-  { value: '\u2042', label: '\u2042  Asterism' },
+  { value: '\u2766', label: '❦  Floral Heart' },
+  { value: '\u2726', label: '✦  Star' },
+  { value: '\u2042', label: '⁂  Asterism' },
 ];
 
 interface ExportResult {
@@ -64,36 +61,35 @@ export function ExportPanel() {
   const [orphanControl, setOrphanControl] = useState(true);
   const [platform, setPlatform] = useState('generic');
   const [runningHeader, setRunningHeader] = useState('none');
-
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [isbn, setIsbn] = useState('');
   const [publisher, setPublisher] = useState('');
 
+  // Spine Calculator
+  const [spinePages, setSpinePages] = useState('');
+  const [spinePaper, setSpinePaper] = useState('cream');
+  const [spineResult, setSpineResult] = useState<{ spineWidth: number; spineWidthMm: number } | null>(null);
+
+  // Preflight
+  const [preflightWarnings, setPreflightWarnings] = useState<any[]>([]);
+  const [runningPreflight, setRunningPreflight] = useState(false);
+
   async function handleExport() {
-    if (exportFormats.length === 0) return setError('Please select at least one format.');
+    if (exportFormats.length === 0) return setError('Select at least one format.');
     setIsExporting(true);
     setResults({});
     setError(null);
 
     try {
       const methodMap: Record<string, string> = {
-        epub: 'exportEpub',
-        pdf: 'exportPdf',
-        docx: 'exportDocx',
-        txt: 'exportTxt',
-        html: 'exportHtml'
+        epub: 'exportEpub', pdf: 'exportPdf', docx: 'exportDocx',
+        txt: 'exportTxt', html: 'exportHtml', md: 'exportMarkdown',
       };
 
       const settings = {
-        theme: {},
-        dropCaps,
-        sceneBreakSymbol: sceneBreak,
-        trimSize,
-        mirrorMargins,
-        orphanControl,
-        platform,
-        runningHeader,
+        theme: {}, dropCaps, sceneBreakSymbol: sceneBreak,
+        trimSize, mirrorMargins, orphanControl, platform, runningHeader,
         metadataOverrides: {
           title: title.trim() || undefined,
           author: author.trim() || undefined,
@@ -103,20 +99,15 @@ export function ExportPanel() {
       };
 
       const newResults: Record<string, ExportResult> = {};
-
       for (const fmt of exportFormats) {
         const method = methodMap[fmt];
         if (method) {
           try {
             const res = await callGas<ExportResult>(method, settings);
             newResults[fmt] = { ...res, format: fmt };
-            setResults({ ...newResults }); // Incremental UI update
+            setResults({ ...newResults });
           } catch (err) {
-            console.error(`Export failed for ${fmt}:`, err);
-            const errMsg = `Failed for ${fmt.toUpperCase()}: ${err instanceof Error ? err.message : String(err)}`;
-            // We can't use callback on setError, so we'll just set it directly or use local state for multiple errors. 
-            // For now, we'll just set the last error.
-            setError(errMsg);
+            setError(`${fmt.toUpperCase()} failed: ${err instanceof Error ? err.message : String(err)}`);
           }
         }
       }
@@ -127,282 +118,250 @@ export function ExportPanel() {
     }
   }
 
-  const [preflightWarnings, setPreflightWarnings] = useState<any[]>([]);
-  const [runningPreflight, setRunningPreflight] = useState(false);
-
   async function handlePreflight() {
     setRunningPreflight(true);
     setPreflightWarnings([]);
     try {
-      const settings = { platform };
-      const warnings = await callGas<any[]>('runPreflightCheck', settings);
-      setPreflightWarnings(warnings && warnings.length > 0 ? warnings : [{ type: 'success', level: 'success', message: 'All checks passed! Document is ready for print/distribution.' }]);
+      const warnings = await callGas<any[]>('runPreflightCheck', { platform });
+      setPreflightWarnings(warnings?.length ? warnings : [{ level: 'success', message: 'All checks passed! Ready for print.' }]);
     } catch (e) {
-      setPreflightWarnings([{ type: 'error', level: 'error', message: 'Failed to run checks: ' + String(e) }]);
+      setPreflightWarnings([{ level: 'error', message: 'Check failed: ' + String(e) }]);
     } finally {
       setRunningPreflight(false);
     }
   }
 
+  function calcSpine() {
+    const pages = parseInt(spinePages);
+    if (!pages || pages < 1) return;
+    // Client-side calculation (same formula as addon)
+    const ppiMap: Record<string, number> = { cream: 0.0025, white: 0.002252, groundwood: 0.0035, heavy: 0.003 };
+    const ppi = ppiMap[spinePaper] || 0.0025;
+    const spineInches = (pages * ppi) + 0.06;
+    setSpineResult({
+      spineWidth: Math.round(spineInches * 1000) / 1000,
+      spineWidthMm: Math.round(spineInches * 25.4 * 10) / 10,
+    });
+  }
+
   return (
-    <div className="p-3 space-y-3 pb-20">
+    <div className="p-3 space-y-3 pb-20 animate-fade-in">
+      {/* Header */}
       <div>
-        <h2 className="text-sm font-semibold text-gray-800">Export Book</h2>
-        <p className="text-[11px] text-gray-400 mt-0.5">Generate a publish-ready file from your document</p>
+        <h2 className="section-heading">Export Book</h2>
+        <p className="section-desc">Generate publish-ready files from your document</p>
       </div>
 
-      {/* Format selector */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-1.5 mb-2">
-        {(Object.keys(FORMAT_INFO)).map((fmt) => {
+      {/* ─── Format Selector ─── */}
+      <div className="grid grid-cols-3 gap-1.5">
+        {Object.entries(FORMAT_INFO).map(([fmt, info]) => {
           const isSelected = exportFormats.includes(fmt);
           return (
             <button
               key={fmt}
               onClick={() => { toggleExportFormat(fmt); setResults({}); }}
-              className={`py-2 rounded-lg text-xs font-bold border-2 transition-all flex flex-col items-center gap-0.5
+              className={`py-2.5 rounded-xl text-[11px] font-bold border-2 transition-all duration-200 flex flex-col items-center gap-0.5
                 ${isSelected
-                  ? 'border-bookify-600 bg-bookify-600 text-white shadow-sm'
-                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700'}`}
+                  ? `border-transparent bg-gradient-to-r ${info.gradient} text-white shadow-md scale-[1.02]`
+                  : 'border-gray-100 bg-white text-gray-500 hover:border-gray-200 hover:shadow-sm'}`}
             >
-              <div className="flex gap-1.5 items-center">
-                <span className="text-base">{FORMAT_INFO[fmt].emoji}</span>
-                {fmt.toUpperCase()}
-              </div>
+              <span className="text-[13px] font-extrabold">{fmt.toUpperCase()}</span>
+              <span className={`text-[9px] font-normal ${isSelected ? 'text-white/70' : 'text-gray-400'}`}>{info.desc}</span>
             </button>
           );
         })}
       </div>
-      {exportFormats.length > 0 && (
-        <div className="text-[11px] text-gray-500 mb-3 space-y-0.5">
-          {exportFormats.map(fmt => (
-            <div key={fmt} className="flex gap-2">
-              <span className="font-mono text-gray-400 w-10">{FORMAT_INFO[fmt].ext}</span>
-              <span>{FORMAT_INFO[fmt].desc}</span>
-            </div>
-          ))}
-        </div>
-      )}
 
-      {/* Metadata (collapsible) */}
-      <details className="group">
-        <summary className="cursor-pointer text-xs font-semibold text-gray-600 flex items-center gap-1 select-none list-none py-1">
+      {/* ─── Metadata ─── */}
+      <details className="group card-section !p-0 overflow-hidden">
+        <summary className="cursor-pointer text-xs font-semibold text-gray-600 flex items-center gap-2 select-none list-none p-3 hover:bg-gray-50 transition-colors">
           <span className="text-gray-400 group-open:rotate-90 transition-transform inline-block text-[10px]">▶</span>
           Book Metadata
-          <span className="font-normal text-gray-400 text-[11px]">(optional)</span>
+          <span className="font-normal text-gray-300 text-[10px]">optional</span>
         </summary>
-        <div className="mt-2 space-y-2">
-          <input
-            type="text"
-            placeholder="Title (defaults to document name)"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-2 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-bookify-400"
-          />
-          <input
-            type="text"
-            placeholder="Author Name"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-            className="w-full p-2 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-bookify-400"
-          />
+        <div className="p-3 pt-0 space-y-2 border-t border-gray-50">
+          <input type="text" placeholder="Title (defaults to doc name)" value={title} onChange={e => setTitle(e.target.value)} className="input-field" />
+          <input type="text" placeholder="Author Name" value={author} onChange={e => setAuthor(e.target.value)} className="input-field" />
           <div className="grid grid-cols-2 gap-2">
-            <input
-              type="text"
-              placeholder="ISBN"
-              value={isbn}
-              onChange={(e) => setIsbn(e.target.value)}
-              className="p-2 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-bookify-400"
-            />
-            <input
-              type="text"
-              placeholder="Publisher"
-              value={publisher}
-              onChange={(e) => setPublisher(e.target.value)}
-              className="p-2 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-bookify-400"
-            />
+            <input type="text" placeholder="ISBN" value={isbn} onChange={e => setIsbn(e.target.value)} className="input-field" />
+            <input type="text" placeholder="Publisher" value={publisher} onChange={e => setPublisher(e.target.value)} className="input-field" />
           </div>
         </div>
       </details>
 
-      {/* EPUB Settings */}
+      {/* ─── EPUB Options ─── */}
       {exportFormats.includes('epub') && (
-        <div className="p-3 bg-purple-50 border border-purple-100 rounded-lg space-y-2">
-          <p className="text-[10px] font-semibold text-purple-700 uppercase tracking-wide">EPUB Options</p>
-          <label className="flex items-center gap-2 text-xs cursor-pointer">
-            <input
-              type="checkbox"
-              checked={dropCaps}
-              onChange={(e) => setDropCaps(e.target.checked)}
-              className="rounded accent-purple-600"
-            />
-            <span className="text-gray-700">Drop caps at each chapter start</span>
-          </label>
+        <div className="card-section space-y-2.5 border-l-[3px] border-l-violet-400 animate-slide-up">
+          <p className="section-title text-violet-500">EPUB Options</p>
+          <ToggleRow label="Drop caps at chapter start" checked={dropCaps} onChange={setDropCaps} />
           <div>
             <label className="text-[11px] text-gray-500 block mb-1">Scene break symbol</label>
-            <select
-              value={sceneBreak}
-              onChange={(e) => setSceneBreak(e.target.value)}
-              className="w-full p-1.5 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-purple-400"
-            >
-              {SCENE_BREAKS.map((sb) => (
-                <option key={sb.value} value={sb.value}>{sb.label}</option>
-              ))}
+            <select value={sceneBreak} onChange={e => setSceneBreak(e.target.value)} className="select-field">
+              {SCENE_BREAKS.map(sb => <option key={sb.value} value={sb.value}>{sb.label}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-[11px] text-gray-500 block mb-1">Platform Store Links</label>
-            <select
-              value={platform}
-              onChange={(e) => setPlatform(e.target.value)}
-              className="w-full p-1.5 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-purple-400"
-            >
+            <label className="text-[11px] text-gray-500 block mb-1">Platform store links</label>
+            <select value={platform} onChange={e => setPlatform(e.target.value)} className="select-field">
               <option value="generic">Generic (Books2Read)</option>
-              <option value="amazon">Amazon Kindle Store</option>
-              <option value="apple">Apple Books Store</option>
-              <option value="kobo">Kobo Store</option>
+              <option value="amazon">Amazon Kindle</option>
+              <option value="apple">Apple Books</option>
+              <option value="kobo">Kobo</option>
             </select>
           </div>
         </div>
       )}
 
-      {/* PDF Settings */}
+      {/* ─── PDF / Print Options ─── */}
       {exportFormats.includes('pdf') && (
-        <div className="p-3 bg-red-50 border border-red-100 rounded-lg space-y-2">
-          <p className="text-[10px] font-semibold text-red-700 uppercase tracking-wide">Print Settings</p>
+        <div className="card-section space-y-2.5 border-l-[3px] border-l-rose-400 animate-slide-up">
+          <p className="section-title text-rose-500">Print Settings</p>
           <div>
             <label className="text-[11px] text-gray-500 block mb-1">Trim size</label>
-            <select
-              value={trimSize}
-              onChange={(e) => setTrimSize(e.target.value)}
-              className="w-full p-1.5 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-red-400"
-            >
-              {TRIM_SIZES.map((s) => (
-                <option key={s.value} value={s.value}>{s.label}</option>
-              ))}
+            <select value={trimSize} onChange={e => setTrimSize(e.target.value)} className="select-field">
+              {TRIM_SIZES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-[11px] text-gray-500 block mb-1">Running Headers</label>
-            <select
-              value={runningHeader}
-              onChange={(e) => setRunningHeader(e.target.value)}
-              className="w-full p-1.5 border border-gray-200 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-red-400"
-            >
+            <label className="text-[11px] text-gray-500 block mb-1">Running headers</label>
+            <select value={runningHeader} onChange={e => setRunningHeader(e.target.value)} className="select-field">
               <option value="none">None</option>
               <option value="author_title">Author (Left) & Title (Right)</option>
+              <option value="chapter_title">Chapter Title</option>
             </select>
           </div>
           <div className="space-y-1.5">
-            {([
-              { label: 'Mirror margins (for binding)', value: mirrorMargins, set: setMirrorMargins },
-              { label: 'Orphan/widow control', value: orphanControl, set: setOrphanControl },
-              { label: 'Drop caps', value: dropCaps, set: setDropCaps },
-            ] as const).map(({ label, value, set }) => (
-              <label key={label} className="flex items-center gap-2 text-xs cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={value}
-                  onChange={(e) => set(e.target.checked)}
-                  className="rounded accent-red-600"
-                />
-                <span className="text-gray-700">{label}</span>
-              </label>
-            ))}
+            <ToggleRow label="Mirror margins (binding)" checked={mirrorMargins} onChange={setMirrorMargins} />
+            <ToggleRow label="Orphan/widow control" checked={orphanControl} onChange={setOrphanControl} />
+            <ToggleRow label="Drop caps" checked={dropCaps} onChange={setDropCaps} />
           </div>
         </div>
       )}
 
-      {/* Pre-flight Checks (Optional) */}
-      <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg space-y-2 mt-4">
+      {/* ─── Spine Width Calculator ─── */}
+      {exportFormats.includes('pdf') && (
+        <details className="group card-section !p-0 overflow-hidden animate-slide-up">
+          <summary className="cursor-pointer text-xs font-semibold text-gray-600 flex items-center gap-2 select-none list-none p-3 hover:bg-gray-50 transition-colors">
+            <span className="text-gray-400 group-open:rotate-90 transition-transform inline-block text-[10px]">▶</span>
+            📐 Spine Width Calculator
+          </summary>
+          <div className="p-3 pt-0 space-y-2 border-t border-gray-50">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] text-gray-400 block mb-1">Page count</label>
+                <input type="number" placeholder="e.g. 300" value={spinePages} onChange={e => setSpinePages(e.target.value)} className="input-field" min="1" />
+              </div>
+              <div>
+                <label className="text-[10px] text-gray-400 block mb-1">Paper type</label>
+                <select value={spinePaper} onChange={e => setSpinePaper(e.target.value)} className="select-field">
+                  <option value="cream">Cream / Natural</option>
+                  <option value="white">White (50lb)</option>
+                  <option value="groundwood">Groundwood</option>
+                  <option value="heavy">Heavy Cream</option>
+                </select>
+              </div>
+            </div>
+            <button onClick={calcSpine} className="btn-secondary w-full">Calculate</button>
+            {spineResult && (
+              <div className="p-2.5 bg-gradient-to-r from-bookify-50 to-violet-50 rounded-lg text-center animate-scale-in">
+                <p className="text-xl font-bold text-bookify-700">{spineResult.spineWidth}″</p>
+                <p className="text-[11px] text-gray-500">{spineResult.spineWidthMm} mm</p>
+              </div>
+            )}
+          </div>
+        </details>
+      )}
+
+      {/* ─── Pre-flight ─── */}
+      <div className="card-section space-y-2">
         <div className="flex justify-between items-center">
           <div>
-            <p className="text-[10px] font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-1">
+            <p className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
               <span className="text-sm">🩺</span> Pre-flight Check
             </p>
-            <p className="text-[10px] text-gray-500">Scan for print & distribution issues</p>
+            <p className="text-[10px] text-gray-400">Scan for print & distribution issues</p>
           </div>
-          <button
-            onClick={handlePreflight}
-            disabled={runningPreflight}
-            className="px-2 py-1 bg-white border border-gray-300 rounded text-[10px] font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-50"
-          >
-            {runningPreflight ? 'Scanning...' : 'Run Checks'}
+          <button onClick={handlePreflight} disabled={runningPreflight} className="btn-secondary">
+            {runningPreflight ? (
+              <span className="flex items-center gap-1">
+                <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                Scanning…
+              </span>
+            ) : 'Run Checks'}
           </button>
         </div>
-
         {preflightWarnings.length > 0 && (
-          <div className="mt-2 space-y-1">
+          <div className="space-y-1 animate-slide-up">
             {preflightWarnings.map((w, i) => (
-              <div
-                key={i}
-                className={`p-2 rounded text-[10px] font-medium leading-relaxed border ${w.level === 'error' ? 'bg-red-50 text-red-700 border-red-200' :
-                    w.level === 'warning' ? 'bg-yellow-50 text-yellow-800 border-yellow-200' :
-                      'bg-green-50 text-green-700 border-green-200'
-                  }`}
-              >
-                <div className="flex items-start gap-1.5">
-                  <span className="mt-0.5 flex-shrink-0">
-                    {w.level === 'error' ? '❌' : w.level === 'warning' ? '⚠️' : '✅'}
-                  </span>
-                  <span>{w.message}</span>
-                </div>
+              <div key={i} className={`p-2 rounded-lg text-[10px] font-medium border ${w.level === 'error' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                  w.level === 'warning' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                    'bg-emerald-50 text-emerald-700 border-emerald-200'
+                }`}>
+                <span className="mr-1.5">{w.level === 'error' ? '❌' : w.level === 'warning' ? '⚠️' : '✅'}</span>
+                {w.message}
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Export Button */}
-      <button
-        onClick={handleExport}
-        disabled={isExporting || exportFormats.length === 0}
-        className="w-full py-3 bg-bookify-600 text-white rounded-lg text-sm font-semibold
-          hover:bg-bookify-700 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed
-          transition-all shadow-sm flex items-center justify-center gap-2 mt-4"
-      >
+      {/* ─── Export Button ─── */}
+      <button onClick={handleExport} disabled={isExporting || exportFormats.length === 0} className="btn-primary !py-3 !text-sm !rounded-xl">
         {isExporting ? (
           <>
             <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             Generating Files…
           </>
         ) : (
-          `Export ${exportFormats.length} Format${exportFormats.length !== 1 ? 's' : ''}`
+          <>
+            Export {exportFormats.length} Format{exportFormats.length !== 1 ? 's' : ''}
+          </>
         )}
       </button>
 
-      {/* Result */}
+      {/* ─── Results ─── */}
       {Object.values(results).length > 0 && (
-        <div className="space-y-2 mt-4">
-          <h3 className="text-xs font-semibold text-gray-800">Export Results:</h3>
+        <div className="space-y-2 animate-slide-up">
+          <p className="section-title">Export Results</p>
           {Object.entries(results).map(([fmt, result]) => (
-            <div key={fmt} className="p-3 bg-green-50 border border-green-200 rounded-lg space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="w-4 h-4 rounded-full bg-green-500 text-white text-[10px] flex items-center justify-center flex-shrink-0">✓</span>
-                <p className="text-xs font-semibold text-green-800">{fmt.toUpperCase()} export complete!</p>
+            <div key={fmt} className="card-section border-l-[3px] border-l-emerald-400">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] flex items-center justify-center flex-shrink-0 font-bold">✓</span>
+                <p className="text-xs font-semibold text-gray-800">{fmt.toUpperCase()}</p>
               </div>
-              <div className="text-[11px] text-green-700 space-y-0.5 ml-6">
-                <p className="font-mono text-[10px] truncate text-gray-500">{result.filename}</p>
-                <p>
-                  {result.sizeFormatted}
-                  {result.pageCount ? ` · ${result.pageCount} pages` : ''}
-                  {result.chapterCount ? ` · ${result.chapterCount} chapters` : ''}
-                </p>
-              </div>
-              <a
-                href={result.downloadUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-1.5 w-full py-1.5
-                  bg-green-600 text-white rounded-md text-xs font-semibold hover:bg-green-700 transition-colors"
-                title={`Download ${fmt.toUpperCase()}`}
-              >
+              <p className="text-[10px] text-gray-400 font-mono truncate mb-1.5">{result.filename}</p>
+              <p className="text-[11px] text-gray-600 mb-2">
+                {result.sizeFormatted}
+                {result.pageCount ? ` · ${result.pageCount} pages` : ''}
+                {result.chapterCount ? ` · ${result.chapterCount} chapters` : ''}
+              </p>
+              <a href={result.downloadUrl} target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1.5 w-full py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-all shadow-sm">
                 ↓ Download {fmt.toUpperCase()}
               </a>
             </div>
           ))}
-          <p className="text-[10px] text-green-400 text-center mt-2">Links expire in 24 hours</p>
+          <p className="text-[10px] text-gray-300 text-center">Links expire in 24 hours</p>
         </div>
       )}
     </div>
+  );
+}
+
+/* ─── Toggle Row Component ─── */
+function ToggleRow({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex items-center justify-between gap-2 cursor-pointer group py-0.5">
+      <span className="text-[11px] text-gray-600 group-hover:text-gray-800 transition-colors">{label}</span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={`toggle-switch ${checked ? 'bg-bookify-600' : 'bg-gray-200'}`}
+      >
+        <span className={`toggle-switch-knob ${checked ? 'translate-x-4' : 'translate-x-0'}`} />
+      </button>
+    </label>
   );
 }

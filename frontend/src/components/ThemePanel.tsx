@@ -76,46 +76,45 @@ export function ThemePanel() {
   if (loading) {
     return (
       <div className="p-3 space-y-2">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-5 h-5 bg-bookify-100 rounded animate-pulse" />
-          <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
-        </div>
+        <div className="section-heading mb-2">Book Themes</div>
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-20 bg-gray-100 rounded-lg animate-pulse" />
+          <div key={i} className="skeleton h-20 rounded-xl" />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full animate-fade-in">
       {/* Header */}
-      <div className="px-3 pt-3 pb-2 border-b border-gray-100">
-        <h2 className="text-sm font-semibold text-gray-800 mb-2">Book Themes</h2>
-        <div className="flex gap-1 bg-gray-100 p-0.5 rounded-lg">
+      <div className="px-3 pt-3 pb-2 border-b border-gray-100 bg-white">
+        <h2 className="section-heading mb-0.5">Book Themes</h2>
+        <p className="section-desc mb-2">Style your book with professional typography</p>
+        <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
           <button
             onClick={() => setTab('presets')}
-            className={`flex-1 px-2 py-1.5 rounded-md text-[11px] font-medium transition-colors
+            className={`flex-1 px-2 py-1.5 rounded-md text-[11px] font-semibold transition-all duration-200
               ${tab === 'presets' ? 'bg-white text-bookify-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            Preset Themes
+            🎨 Presets
           </button>
           <button
             onClick={() => setTab('custom')}
-            className={`flex-1 px-2 py-1.5 rounded-md text-[11px] font-medium transition-colors
+            className={`flex-1 px-2 py-1.5 rounded-md text-[11px] font-semibold transition-all duration-200
               ${tab === 'custom' ? 'bg-white text-bookify-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            Custom Builder
+            ⚙️ Custom
           </button>
         </div>
       </div>
 
       {/* Status */}
       {status && (
-        <div className={`mx-3 mt-2 px-2 py-1.5 rounded-md text-[11px] flex items-center gap-1.5
-          ${status.ok ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-          <span>{status.ok ? '✓' : '✕'}</span>
-          <span>{status.text}</span>
+        <div className={`mx-3 mt-2 px-2.5 py-2 rounded-xl text-[11px] flex items-center gap-2 animate-slide-down
+          ${status.ok ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
+          <span className={`w-4 h-4 rounded-full text-white text-[9px] flex items-center justify-center font-bold ${status.ok ? 'bg-emerald-500' : 'bg-rose-500'}`}>{status.ok ? '✓' : '!'}</span>
+          <span className="flex-1">{status.text}</span>
+          <button onClick={() => setStatus(null)} className="text-gray-300 hover:text-gray-500 text-sm font-bold">×</button>
         </div>
       )}
 
@@ -140,10 +139,10 @@ export function ThemePanel() {
                       key={theme.id}
                       onClick={() => handleApplyTheme(theme)}
                       disabled={applying}
-                      className={`w-full p-3 rounded-lg border text-left transition-all hover:shadow-sm disabled:opacity-50 group
+                      className={`w-full p-3 rounded-xl border-2 text-left transition-all hover:shadow-card-hover disabled:opacity-50 group
                         ${selectedId === theme.id
-                          ? 'border-bookify-400 bg-bookify-50 ring-1 ring-bookify-200'
-                          : 'border-gray-200 bg-white hover:border-bookify-200 hover:bg-blue-50/30'
+                          ? 'border-bookify-400 bg-bookify-50/50 ring-1 ring-bookify-200'
+                          : 'border-gray-100 bg-white hover:border-bookify-200'
                         }`}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -285,8 +284,7 @@ export function ThemePanel() {
             <button
               onClick={() => handleApplyTheme(customTheme as ThemePresetI)}
               disabled={applying}
-              className="w-full py-2.5 bg-bookify-600 text-white rounded-lg text-sm font-medium
-                hover:bg-bookify-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              className="btn-primary"
             >
               {applying ? (
                 <>

@@ -265,20 +265,23 @@ export function PreviewerPanel() {
   const categories = [...new Set(DEVICES.map((d) => d.category))];
 
   return (
-    <div className="p-3 space-y-3">
+    <div className="p-3 space-y-3 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-800">Device Preview</h2>
+        <div>
+          <h2 className="section-heading">Device Preview</h2>
+          <p className="section-desc">See how your book looks on real devices</p>
+        </div>
         <button
           onClick={loadPreviewContent}
           disabled={loadingContent}
-          className="text-[10px] px-2 py-1 rounded bg-bookify-50 text-bookify-600 hover:bg-bookify-100 disabled:opacity-50"
+          className="btn-secondary"
         >
           {loadingContent ? 'Loading…' : '↻ Live Preview'}
         </button>
       </div>
 
       {/* Category Tabs */}
-      <div className="flex gap-0.5 bg-gray-100 rounded-md p-0.5">
+      <div className="flex gap-0.5 p-0.5 bg-gray-100 rounded-lg">
         {categories.map((cat) => (
           <button
             key={cat}

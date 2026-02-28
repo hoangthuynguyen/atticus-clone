@@ -35,13 +35,13 @@ export function BoxSetPanel() {
     }
 
     return (
-        <div className="p-3 space-y-4 pb-20 flex flex-col h-full overflow-y-auto">
+        <div className="p-3 space-y-4 pb-20 flex flex-col h-full overflow-y-auto animate-fade-in">
             <div>
-                <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                <h2 className="section-heading flex items-center gap-2">
                     <span className="text-lg">📦</span> Box Set Generator
                 </h2>
-                <p className="text-[11px] text-gray-500 mt-1.5 leading-relaxed bg-gray-50 p-2 rounded border border-gray-100">
-                    Combine multiple Google Docs into a single massive EPUB file. Paste the URLs of the books you want to include, one per line. The Add-on will automatically combine them, adjusting Table of Contents and Headings cleanly.
+                <p className="section-desc mt-1 leading-relaxed">
+                    Combine multiple Google Docs into a single EPUB. Paste URLs below, one per line.
                 </p>
             </div>
 
@@ -51,7 +51,7 @@ export function BoxSetPanel() {
                     <input
                         type="text"
                         placeholder="e.g. The Lord of The Rings: The Complete Trilogy"
-                        className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none transition-shadow"
+                        className="input-field"
                         value={title}
                         onChange={e => setTitle(e.target.value)}
                     />
@@ -60,7 +60,7 @@ export function BoxSetPanel() {
                 <div>
                     <div className="flex justify-between items-end mb-1">
                         <label className="text-xs font-semibold text-gray-700 block">Google Docs URLs</label>
-                        <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{urlsText.split('\n').filter(x => x.trim()).length} documents found</span>
+                        <span className="badge bg-gray-100 text-gray-500">{urlsText.split('\n').filter(x => x.trim()).length} docs</span>
                     </div>
                     <textarea
                         className="w-full h-40 text-[11px] p-2.5 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none font-mono whitespace-nowrap overflow-x-auto leading-loose transition-shadow bg-gray-50 focus:bg-white"
@@ -76,7 +76,7 @@ export function BoxSetPanel() {
                 <button
                     onClick={handleGenerate}
                     disabled={loading || !urlsText.trim()}
-                    className="w-full py-3 bg-bookify-600 text-white rounded-lg text-sm font-bold hover:bg-bookify-700 disabled:opacity-50 transition-all shadow-sm active:scale-[0.99] flex items-center justify-center gap-2"
+                    className="btn-primary !py-3 !text-sm !rounded-xl"
                 >
                     {loading ? (
                         <>
@@ -88,26 +88,26 @@ export function BoxSetPanel() {
             </div>
 
             {status && (
-                <div className={`p-2.5 rounded-md text-xs font-medium border flex items-center gap-2 ${status.ok ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                <div className={`p-2.5 rounded-xl text-xs font-medium border flex items-center gap-2 animate-slide-down ${status.ok ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
                     <span>{status.ok ? '✅' : '❌'}</span>
                     <span>{status.text}</span>
                 </div>
             )}
 
             {result && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-3 mt-4">
-                    <p className="text-xs font-bold text-green-800 text-center">Your Box Set is Ready!</p>
-                    <div className="flex justify-between items-center bg-white border border-green-100 p-2.5 rounded text-[11px] text-gray-600 font-mono shadow-sm">
+                <div className="card-section border-l-[3px] border-l-emerald-400 space-y-3 mt-4">
+                    <p className="text-xs font-bold text-emerald-800 text-center">🎉 Your Box Set is Ready!</p>
+                    <div className="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg text-[11px] text-gray-600 font-mono">
                         <span className="truncate mr-2 text-gray-800">{result.filename}</span>
-                        <span className="flex-shrink-0 font-bold bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">{result.sizeFormatted}</span>
+                        <span className="badge bg-gray-100 text-gray-500">{result.sizeFormatted}</span>
                     </div>
                     <a
                         href={result.downloadUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full pt-1.5 pb-2 bg-green-600 text-white rounded-md text-xs font-bold hover:bg-green-700 transition shadow-sm"
+                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition shadow-sm"
                     >
-                        ↓ Download Box Set Now
+                        ↓ Download Box Set
                     </a>
                 </div>
             )}

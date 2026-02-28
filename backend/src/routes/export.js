@@ -317,6 +317,84 @@ router.post('/html', async (req, res) => {
 });
 
 // =============================================================================
+// POST /export/markdown
+// =============================================================================
+
+router.post('/markdown', async (req, res) => {
+  try {
+    const { docContent, docId, metadata } = req.body;
+    if (!docContent) {
+      return res.status(400).json({ error: 'docContent is required', code: 'MISSING_CONTENT' });
+    }
+
+    console.log(`[MD] Starting export for doc ${docId} by ${req.user.email}`);
+
+    const { convert } = require('html-to-text');
+    const mdContent = convert(docContent, {
+      wordwrap: false,
+      preserveNewlines: true,
+      formatters: {
+        heading: function (elem, walk, builder, formatOptions) {
+          builder.openBlock({ leadingLineBreaks: 2 });
+          const level = parseInt(elem.name.charAt(1)) || 1;
+          builder.addInline('#'.repeat(level) + ' ');
+          walk(elem.children, builder);
+          builder.closeBlock({ trailingLineBreaks: 2 });
+        },
+      },
+      selectors: [
+        { selector: 'h1', format: 'heading' },
+        { selector: 'h2', format: 'heading' },
+        { selector: 'h3', format: 'heading' },
+        { selector: 'strong', format: 'inline', options: { prefix: '**', suffix: '**' } },
+        { selector: 'em', format: 'inline', options: { prefix: '_', suffix: '_' } },
+        { selector: 'img', format: 'skip' },
+      ],
+    });
+
+    const title = (metadata || {}).title || 'Document Export';
+    const author = (metadata || {}).author || '';
+    const frontMatter = `---\ntitle: "${title}"\n${author ? `author: "${author}"\n` : ''}date: "${new Date().toISOString().split('T')[0]}"\n---\n\n`;
+    const fullContent = frontMatter + mdContent;
+
+    const filename = `export_${Date.now()}.md`;
+    const buffer = Buffer.from(fullContent, 'utf-8');
+
+    const { signedUrl, key } = await uploadExportFile(
+      buffer,
+      filename,
+      'text/markdown',
+      req.user.id
+    );
+
+    await saveExportHistory(
+      req.user.id,
+      docId || 'unknown',
+      'markdown',
+      signedUrl,
+      buffer.length,
+      { r2Key: key }
+    );
+
+    console.log(`[MD] Export complete: ${filename} (${formatBytes(buffer.length)})`);
+
+    res.json({
+      downloadUrl: signedUrl,
+      filename,
+      size: buffer.length,
+      sizeFormatted: formatBytes(buffer.length),
+    });
+  } catch (error) {
+    console.error('[MD] Export failed:', error);
+    res.status(500).json({
+      error: 'Markdown export failed',
+      code: 'MD_EXPORT_FAILED',
+      details: error.message,
+    });
+  }
+});
+
+// =============================================================================
 // GET /export/trim-sizes
 // =============================================================================
 

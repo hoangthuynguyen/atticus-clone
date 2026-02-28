@@ -534,3 +534,163 @@ function validateImageDPI() {
     throw new Error('Image validation failed: ' + error.message);
   }
 }
+
+// =============================================================================
+// Character / Location Bible
+// =============================================================================
+
+/**
+ * Get the character bible data.
+ * @returns {{ characters: Array, locations: Array }}
+ */
+function getCharacterBible() {
+  try {
+    var props = PropertiesService.getUserProperties();
+    var data = JSON.parse(props.getProperty('character_bible') || '{"characters":[],"locations":[]}');
+    return data;
+  } catch (error) {
+    throw new Error('Get character bible failed: ' + error.message);
+  }
+}
+
+/**
+ * Save character bible data.
+ * @param {object} data - { characters: Array, locations: Array }
+ */
+function saveCharacterBible(data) {
+  try {
+    var props = PropertiesService.getUserProperties();
+    props.setProperty('character_bible', JSON.stringify(data));
+    return { success: true };
+  } catch (error) {
+    throw new Error('Save character bible failed: ' + error.message);
+  }
+}
+
+// =============================================================================
+// Spine Width Calculator
+// =============================================================================
+
+/**
+ * Calculate book spine width based on page count and paper type.
+ * @param {number} pageCount - Total number of pages
+ * @param {string} paperType - 'cream' (0.0025") or 'white' (0.002252")
+ * @returns {{ spineWidth: number, spineWidthMm: number, unit: string }}
+ */
+function calculateSpineWidth(pageCount, paperType) {
+  // Industry-standard PPI (pages per inch) values
+  var ppiMap = {
+    'cream': 0.0025,      // Cream/natural paper (444 PPI → 0.0025 in/page)
+    'white': 0.002252,     // White paper (standard 50lb → 0.002252 in/page)
+    'groundwood': 0.0035,  // Groundwood (newsprint-like, thicker)
+    'heavy': 0.003,        // Heavy cream (used for short books)
+  };
+
+  var ppi = ppiMap[paperType] || ppiMap['cream'];
+  var coverThickness = 0.06; // ~0.06" for a standard paperback cover (2 sides)
+  
+  var spineInches = (pageCount * ppi) + coverThickness;
+  var spineMm = spineInches * 25.4;
+  
+  return {
+    spineWidth: Math.round(spineInches * 1000) / 1000,
+    spineWidthMm: Math.round(spineMm * 10) / 10,
+    unit: 'inches',
+    pageCount: pageCount,
+    paperType: paperType || 'cream',
+  };
+}
+
+// =============================================================================
+// Markdown Export
+// =============================================================================
+
+/**
+ * Export document as Markdown.
+ * @param {object} settings - Export settings
+ * @returns {object} { downloadUrl, filename, size }
+ */
+function exportMarkdown(settings) {
+  try {
+    var content = getDocumentContent();
+    var result = callExportAPI('/export/markdown', {
+      docContent: content.html,
+      docId: content.metadata.id,
+      metadata: Object.assign({}, content.metadata, settings.metadataOverrides || {}),
+      theme: settings.theme || {},
+    });
+    return result;
+  } catch (error) {
+    throw new Error('Markdown export failed: ' + error.message);
+  }
+}
+
+// =============================================================================
+// Table of Contents Generator
+// =============================================================================
+
+/**
+ * Generate and insert a Table of Contents at the beginning of the document.
+ * @returns {{ success: boolean, count: number }}
+ */
+function generateTableOfContents() {
+  try {
+    var doc = DocumentApp.getActiveDocument();
+    var body = doc.getBody();
+    var headings = extractHeadings_(body);
+    
+    if (headings.length === 0) {
+      throw new Error('No headings found. Use Heading 1/2/3 to define chapters.');
+    }
+    
+    // Find insertion point (after title page if exists, else at top)
+    var insertIndex = 0;
+    
+    // Insert TOC heading
+    var tocHeading = body.insertParagraph(insertIndex, 'Table of Contents');
+    tocHeading.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+    tocHeading.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+    tocHeading.setSpacingBefore(40);
+    tocHeading.setSpacingAfter(20);
+    insertIndex++;
+    
+    // Insert each heading entry
+    for (var i = 0; i < headings.length; i++) {
+      var h = headings[i];
+      var indent = (h.level - 1) * 20; // pixels indent per level
+      var prefix = '';
+      
+      if (h.level === 1) {
+        prefix = '';
+      } else if (h.level === 2) {
+        prefix = '    ';
+      } else {
+        prefix = '        ';
+      }
+      
+      var entryPara = body.insertParagraph(insertIndex, prefix + h.text);
+      entryPara.editAsText().setFontSize(h.level === 1 ? 12 : 11);
+      
+      if (h.level === 1) {
+        entryPara.editAsText().setBold(true);
+      } else {
+        entryPara.editAsText().setForegroundColor('#555555');
+      }
+      
+      entryPara.setIndentStart(indent);
+      entryPara.setSpacingBefore(h.level === 1 ? 8 : 2);
+      entryPara.setSpacingAfter(2);
+      
+      insertIndex++;
+    }
+    
+    // Add a page break after TOC
+    var breakPara = body.insertParagraph(insertIndex, '');
+    breakPara.setPageBreakBefore(true);
+    
+    return { success: true, count: headings.length };
+  } catch (error) {
+    throw new Error('Generate TOC failed: ' + error.message);
+  }
+}
+

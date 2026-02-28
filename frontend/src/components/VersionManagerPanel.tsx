@@ -26,14 +26,17 @@ export function VersionManagerPanel() {
     const [activeSection, setActiveSection] = useState<'versions' | 'collaborate'>('versions');
 
     return (
-        <div className="p-3 space-y-3">
-            <h2 className="text-sm font-semibold text-gray-800">Versions &amp; Collaborate</h2>
+        <div className="p-3 space-y-3 animate-fade-in">
+            <div>
+                <h2 className="section-heading">Versions & Collaborate</h2>
+                <p className="section-desc">Track revisions and share with collaborators</p>
+            </div>
 
             {/* Section Toggle */}
-            <div className="flex gap-0.5 bg-gray-100 rounded-md p-0.5">
+            <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
                 <button
                     onClick={() => setActiveSection('versions')}
-                    className={`flex-1 py-1.5 rounded text-[11px] font-medium transition-colors
+                    className={`flex-1 py-1.5 rounded-md text-[11px] font-semibold transition-all duration-200
             ${activeSection === 'versions'
                             ? 'bg-white text-bookify-600 shadow-sm'
                             : 'text-gray-500 hover:text-gray-700'}`}
@@ -42,7 +45,7 @@ export function VersionManagerPanel() {
                 </button>
                 <button
                     onClick={() => setActiveSection('collaborate')}
-                    className={`flex-1 py-1.5 rounded text-[11px] font-medium transition-colors
+                    className={`flex-1 py-1.5 rounded-md text-[11px] font-semibold transition-all duration-200
             ${activeSection === 'collaborate'
                             ? 'bg-white text-bookify-600 shadow-sm'
                             : 'text-gray-500 hover:text-gray-700'}`}
@@ -51,8 +54,10 @@ export function VersionManagerPanel() {
                 </button>
             </div>
 
-            {activeSection === 'versions' && <VersionsSection />}
-            {activeSection === 'collaborate' && <CollaborateSection />}
+            <div className="animate-fade-in">
+                {activeSection === 'versions' && <VersionsSection />}
+                {activeSection === 'collaborate' && <CollaborateSection />}
+            </div>
         </div>
     );
 }

@@ -36,34 +36,37 @@ export function WritingToolsPanel() {
   const [activeSection, setActiveSection] = useState<Section>('wordcount');
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-3 pt-3 pb-2 border-b border-gray-100 bg-gray-50">
-        <h2 className="text-sm font-semibold text-gray-800 mb-2">Writing Tools</h2>
-        <div className="flex gap-1">
+    <div className="flex flex-col h-full animate-fade-in">
+      <div className="px-3 pt-3 pb-2 border-b border-gray-100 bg-white">
+        <h2 className="section-heading mb-0.5">Writing Tools</h2>
+        <p className="section-desc mb-2">Track progress, analyze text, validate quality</p>
+        <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
           {SECTIONS.map((s) => (
             <button
               key={s.id}
               onClick={() => setActiveSection(s.id)}
               title={s.label}
-              className={`flex-1 py-1.5 rounded-md text-center transition-colors
+              className={`flex-1 py-1.5 rounded-md text-center transition-all duration-200
                 ${activeSection === s.id
-                  ? 'bg-bookify-600 text-white'
-                  : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200'}`}
+                  ? 'bg-white text-bookify-600 shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600'}`}
             >
-              <span className="block text-[13px]">{s.icon}</span>
-              <span className="block text-[9px] font-medium mt-0.5">{s.label}</span>
+              <span className="block text-[12px]">{s.icon}</span>
+              <span className="block text-[8px] font-semibold mt-0.5">{s.label}</span>
             </button>
           ))}
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 pb-20">
-        {activeSection === 'wordcount' && <WordCountSection />}
-        {activeSection === 'sprint' && <SprintTimerSection />}
-        {activeSection === 'streak' && <StreakSection />}
-        {activeSection === 'quotes' && <SmartQuotesSection />}
-        {activeSection === 'analyze' && <AnalyzeSection />}
-        {activeSection === 'dpi' && <DpiValidatorSection />}
+        <div className="animate-fade-in">
+          {activeSection === 'wordcount' && <WordCountSection />}
+          {activeSection === 'sprint' && <SprintTimerSection />}
+          {activeSection === 'streak' && <StreakSection />}
+          {activeSection === 'quotes' && <SmartQuotesSection />}
+          {activeSection === 'analyze' && <AnalyzeSection />}
+          {activeSection === 'dpi' && <DpiValidatorSection />}
+        </div>
       </div>
     </div>
   );
@@ -111,7 +114,7 @@ function WordCountSection() {
 
       {loading && !data && (
         <div className="grid grid-cols-2 gap-2">
-          {[1, 2, 3, 4].map(i => <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />)}
+          {[1, 2, 3, 4].map(i => <div key={i} className="skeleton h-14 rounded-xl" />)}
         </div>
       )}
 
@@ -125,22 +128,22 @@ function WordCountSection() {
       )}
 
       {daily && (
-        <div className="p-3 bg-gray-50 border border-gray-100 rounded-lg space-y-2">
+        <div className="card-section space-y-2">
           <div className="flex justify-between items-center">
             <span className="text-[11px] text-gray-600 font-medium">Daily Goal</span>
-            <span className="text-[11px] font-semibold text-gray-800">
+            <span className="text-[11px] font-bold text-gray-800">
               {daily.today.toLocaleString()} / {daily.goal.toLocaleString()}
             </span>
           </div>
-          <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+          <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all ${daily.percentage >= 100 ? 'bg-green-500' : 'bg-bookify-600'}`}
+              className={`h-full rounded-full transition-all duration-500 ${daily.percentage >= 100 ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 'bg-gradient-to-r from-bookify-500 to-violet-500'}`}
               style={{ width: `${Math.min(100, daily.percentage)}%` }}
             />
           </div>
           <p className="text-[10px] text-gray-400">
             {daily.percentage >= 100
-              ? `Goal reached! ${daily.today - daily.goal} words ahead`
+              ? `🎉 Goal reached! ${daily.today - daily.goal} words ahead`
               : `${daily.goal - daily.today} words to go · ${daily.percentage}%`}
           </p>
         </div>
@@ -151,9 +154,9 @@ function WordCountSection() {
 
 function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className={`p-2.5 rounded-lg border ${accent ? 'bg-bookify-50 border-bookify-100' : 'bg-white border-gray-100'}`}>
-      <p className="text-[10px] text-gray-500 mb-0.5">{label}</p>
-      <p className={`text-base font-bold ${accent ? 'text-bookify-700' : 'text-gray-800'}`}>{value}</p>
+    <div className={`p-3 rounded-xl border transition-shadow hover:shadow-card-hover ${accent ? 'bg-gradient-to-br from-bookify-50 to-violet-50 border-bookify-100' : 'bg-white border-gray-100'}`}>
+      <p className="text-[10px] text-gray-400 mb-0.5 font-medium">{label}</p>
+      <p className={`text-lg font-bold ${accent ? 'text-bookify-700' : 'text-gray-800'}`}>{value}</p>
     </div>
   );
 }
@@ -338,10 +341,10 @@ function StreakSection() {
 
 function StreakCard({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
   return (
-    <div className={`p-2.5 rounded-lg border text-center ${highlight ? 'bg-orange-50 border-orange-200' : 'bg-white border-gray-100'}`}>
-      <p className={`text-xl font-bold ${highlight ? 'text-orange-600' : 'text-gray-800'}`}>{value}</p>
-      <p className={`text-[9px] ${highlight ? 'text-orange-400' : 'text-gray-400'}`}>days</p>
-      <p className="text-[10px] text-gray-500 mt-0.5">{label}</p>
+    <div className={`p-2.5 rounded-xl border text-center transition-shadow hover:shadow-card-hover ${highlight ? 'bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200' : 'bg-white border-gray-100'}`}>
+      <p className={`text-xl font-extrabold ${highlight ? 'text-orange-600' : 'text-gray-800'}`}>{value}</p>
+      <p className={`text-[9px] font-medium ${highlight ? 'text-orange-400' : 'text-gray-400'}`}>days</p>
+      <p className="text-[10px] text-gray-500 mt-0.5 font-medium">{label}</p>
     </div>
   );
 }
