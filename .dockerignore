@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+.git
+.vscode
+.DS_Store
+frontend/dist
+frontend/node_modules
+backend/node_modules
+coverage
+.env
