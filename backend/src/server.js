@@ -66,6 +66,18 @@ app.use('/user', authMiddleware, generalLimiter, userRoutes);
 app.use('/themes', authMiddleware, generalLimiter, themeRoutes);
 
 // =============================================================================
+// Serve Frontend App
+// =============================================================================
+
+const path = require('path');
+const frontendDistPath = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendDistPath));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendDistPath, 'index.html'));
+});
+
+// =============================================================================
 // Error Handler
 // =============================================================================
 

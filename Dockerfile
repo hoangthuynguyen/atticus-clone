@@ -15,33 +15,37 @@ COPY frontend/package.json frontend/
 # Install dependencies for workspaces
 RUN npm ci --ignore-scripts && npm cache clean --force
 
+# Copy frontend source and build
+COPY frontend/ frontend/
+RUN cd frontend && npm run build
+
 # Stage 2: Production runtime (Python + Node.js)
 FROM python:3.11-slim AS production
 
 # Install WeasyPrint system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libpangoft2-1.0-0 \
-    libgdk-pixbuf2.0-0 \
-    libffi-dev \
-    libcairo2 \
-    libcairo-gobject2 \
-    libgirepository1.0-dev \
-    gir1.2-pango-1.0 \
-    fonts-liberation \
-    fonts-dejavu-core \
-    fonts-noto-core \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+  libpango-1.0-0 \
+  libpangocairo-1.0-0 \
+  libpangoft2-1.0-0 \
+  libgdk-pixbuf2.0-0 \
+  libffi-dev \
+  libcairo2 \
+  libcairo-gobject2 \
+  libgirepository1.0-dev \
+  gir1.2-pango-1.0 \
+  fonts-liberation \
+  fonts-dejavu-core \
+  fonts-noto-core \
+  curl \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install WeasyPrint
 RUN pip install --no-cache-dir weasyprint==62.3
 
 # Install Node.js 20 in the Python image
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y --no-install-recommends nodejs \
-    && rm -rf /var/lib/apt/lists/*
+  && apt-get install -y --no-install-recommends nodejs \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -51,6 +55,9 @@ COPY --from=node-builder /app/package.json ./package.json
 
 # Copy backend application code
 COPY backend/ ./backend/
+
+# Copy frontend build output
+COPY --from=node-builder /app/frontend/dist ./frontend/dist
 
 # Make Python scripts executable
 RUN chmod +x backend/python/pdf_render.py
