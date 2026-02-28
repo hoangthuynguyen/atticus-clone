@@ -4,7 +4,7 @@
 # =============================================================================
 
 # Stage 1: Build Node.js dependencies
-FROM node:20-bullseye-slim AS node-builder
+FROM node:20-bookworm-slim AS node-builder
 WORKDIR /app
 
 # Copy root package.json and lockfile (to leverage workspaces natively)
@@ -20,7 +20,7 @@ COPY frontend/ frontend/
 RUN cd frontend && npm run build
 
 # Stage 2: Production runtime (Python + Node.js)
-FROM python:3.11-slim-bullseye AS production
+FROM python:3.11-slim-bookworm AS production
 
 # Install WeasyPrint system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
