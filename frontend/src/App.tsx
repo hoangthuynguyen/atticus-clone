@@ -7,7 +7,6 @@ import { StructurePanel } from './components/StructurePanel';
 import { PreviewerPanel } from './components/PreviewerPanel';
 import { VersionManagerPanel } from './components/VersionManagerPanel';
 import { BoxSetPanel } from './components/BoxSetPanel';
-import { CharacterBiblePanel } from './components/CharacterBiblePanel';
 
 /* ─── SVG Icon Components ─── */
 const IconExport = () => (
@@ -57,7 +56,21 @@ const IconBible = () => (
     <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
   </svg>
 );
-
+const IconAutomation = () => (
+  <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+    <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+  </svg>
+);
+const IconDesign = () => (
+  <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+    <path fillRule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 10.586v3.657zM14.9 8.643l-4.9 4.9v2.828H10z" clipRule="evenodd" />
+  </svg>
+);
+const IconPublishing = () => (
+  <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+  </svg>
+);
 const TABS = [
   { id: 'export' as const, label: 'Export', Icon: IconExport },
   { id: 'formatting' as const, label: 'Format', Icon: IconFormat },
@@ -66,8 +79,11 @@ const TABS = [
   { id: 'structure' as const, label: 'Structure', Icon: IconStructure },
   { id: 'previewer' as const, label: 'Preview', Icon: IconPreview },
   { id: 'boxset' as const, label: 'Box Set', Icon: IconBoxSet },
-  { id: 'bible' as const, label: 'Bible', Icon: IconBible },
   { id: 'versions' as const, label: 'Versions', Icon: IconVersions },
+  { id: 'bible' as const, label: 'Story Bible', Icon: IconBible },
+  { id: 'automation' as const, label: 'Auto', Icon: IconAutomation },
+  { id: 'design' as const, label: 'Design', Icon: IconDesign },
+  { id: 'publishing' as const, label: 'Publish', Icon: IconPublishing },
 ];
 
 export default function App() {
@@ -139,7 +155,6 @@ export default function App() {
           {activeTab === 'structure' && <StructurePanel />}
           {activeTab === 'previewer' && <PreviewerPanel />}
           {activeTab === 'boxset' && <BoxSetPanel />}
-          {activeTab === 'bible' && <CharacterBiblePanel />}
           {activeTab === 'versions' && <VersionManagerPanel />}
         </div>
       </main>

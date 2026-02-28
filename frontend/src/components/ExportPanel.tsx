@@ -1,26 +1,20 @@
 import { useState } from 'react';
 import { useAppStore } from '../store/appStore';
 import { callGas } from '../hooks/useGasBridge';
-
-const TRIM_SIZES = [
-  { value: '5x8', label: '5″ × 8″' },
-  { value: '5.06x7.81', label: '5.06″ × 7.81″  B-Format' },
-  { value: '5.25x8', label: '5.25″ × 8″' },
-  { value: '5.5x8.5', label: '5.5″ × 8.5″  Digest' },
-  { value: '6x9', label: '6″ × 9″  ★ US Trade' },
-  { value: '6.14x9.21', label: '6.14″ × 9.21″  Royal' },
-  { value: '6.69x9.61', label: '6.69″ × 9.61″  Pinched Crown' },
-  { value: '7x10', label: '7″ × 10″  Workbook' },
-  { value: '7.44x9.69', label: '7.44″ × 9.69″  Crown Quarto' },
-  { value: '8x10', label: '8″ × 10″  Picture Book' },
-  { value: '8.5x11', label: '8.5″ × 11″  US Letter' },
-  { value: '8.27x11.69', label: 'A4 (8.27″ × 11.69″)' },
-];
+import {
+  PRINT_SIZES, BINDING_INFO, GENRE_RECOMMENDATIONS,
+  getSizesByBinding, getCategoriesForBinding, formatDimension,
+  type BindingType,
+} from '../data/printSizes';
 
 const FORMAT_INFO: Record<string, { desc: string; ext: string; color: string; gradient: string }> = {
   epub: { desc: 'E-readers & stores', ext: '.epub', color: 'text-violet-600', gradient: 'from-violet-500 to-purple-600' },
   pdf: { desc: 'Print-ready', ext: '.pdf', color: 'text-rose-600', gradient: 'from-rose-500 to-pink-600' },
   docx: { desc: 'Word format', ext: '.docx', color: 'text-blue-600', gradient: 'from-blue-500 to-cyan-600' },
+  kfx: { desc: 'Kindle Format 10', ext: '.kfx', color: 'text-orange-600', gradient: 'from-orange-500 to-amber-600' },
+  azw3: { desc: 'Kindle Format 8', ext: '.azw3', color: 'text-yellow-600', gradient: 'from-yellow-400 to-amber-500' },
+  azw: { desc: 'Original Kindle', ext: '.azw', color: 'text-amber-500', gradient: 'from-amber-400 to-orange-500' },
+  mobi: { desc: 'Legacy Kindle', ext: '.mobi', color: 'text-yellow-700', gradient: 'from-yellow-600 to-orange-700' },
   md: { desc: 'Blog & web', ext: '.md', color: 'text-gray-600', gradient: 'from-gray-500 to-slate-600' },
   txt: { desc: 'Plain text', ext: '.txt', color: 'text-amber-600', gradient: 'from-amber-500 to-orange-600' },
   html: { desc: 'Web page', ext: '.html', color: 'text-emerald-600', gradient: 'from-emerald-500 to-teal-600' },
@@ -50,6 +44,9 @@ export function ExportPanel() {
   const {
     exportFormats, toggleExportFormat,
     trimSize, setTrimSize,
+    bindingType, setBindingType,
+    genre, setGenre,
+    measurementUnit, setMeasurementUnit,
     isExporting, setIsExporting,
     setError,
   } = useAppStore();
@@ -75,6 +72,11 @@ export function ExportPanel() {
   const [preflightWarnings, setPreflightWarnings] = useState<any[]>([]);
   const [runningPreflight, setRunningPreflight] = useState(false);
 
+  // Derived data
+  const availableSizes = getSizesByBinding(bindingType);
+  const categories = getCategoriesForBinding(bindingType);
+  const selectedGenreRec = GENRE_RECOMMENDATIONS.find(r => r.genre === genre);
+
   async function handleExport() {
     if (exportFormats.length === 0) return setError('Select at least one format.');
     setIsExporting(true);
@@ -84,12 +86,14 @@ export function ExportPanel() {
     try {
       const methodMap: Record<string, string> = {
         epub: 'exportEpub', pdf: 'exportPdf', docx: 'exportDocx',
+        kfx: 'exportKfx', azw3: 'exportAzw3', azw: 'exportAzw', mobi: 'exportMobi',
         txt: 'exportTxt', html: 'exportHtml', md: 'exportMarkdown',
       };
 
       const settings = {
         theme: {}, dropCaps, sceneBreakSymbol: sceneBreak,
         trimSize, mirrorMargins, orphanControl, platform, runningHeader,
+        bindingType, genre,
         metadataOverrides: {
           title: title.trim() || undefined,
           author: author.trim() || undefined,
@@ -98,18 +102,35 @@ export function ExportPanel() {
         },
       };
 
-      const newResults: Record<string, ExportResult> = {};
-      for (const fmt of exportFormats) {
+      const exportPromises = exportFormats.map(async (fmt) => {
         const method = methodMap[fmt];
         if (method) {
           try {
             const res = await callGas<ExportResult>(method, settings);
-            newResults[fmt] = { ...res, format: fmt };
-            setResults({ ...newResults });
+            return { fmt, result: { ...res, format: fmt } };
           } catch (err) {
-            setError(`${fmt.toUpperCase()} failed: ${err instanceof Error ? err.message : String(err)}`);
+            return { fmt, error: `${fmt.toUpperCase()} failed: ${err instanceof Error ? err.message : String(err)}` };
           }
         }
+        return { fmt, error: `Unknown format: ${fmt}` };
+      });
+
+      const exportOutcomes = await Promise.all(exportPromises);
+
+      const newResults: Record<string, ExportResult> = {};
+      const errors: string[] = [];
+
+      exportOutcomes.forEach(outcome => {
+        if (outcome.error) {
+          errors.push(outcome.error);
+        } else if (outcome.result) {
+          newResults[outcome.fmt] = outcome.result;
+        }
+      });
+
+      setResults(newResults);
+      if (errors.length > 0) {
+        setError(`Export completed with errors:\n${errors.join('\n')}`);
       }
     } catch (err) {
       setError(`Export failed: ${err instanceof Error ? err.message : String(err)}`);
@@ -134,7 +155,6 @@ export function ExportPanel() {
   function calcSpine() {
     const pages = parseInt(spinePages);
     if (!pages || pages < 1) return;
-    // Client-side calculation (same formula as addon)
     const ppiMap: Record<string, number> = { cream: 0.0025, white: 0.002252, groundwood: 0.0035, heavy: 0.003 };
     const ppi = ppiMap[spinePaper] || 0.0025;
     const spineInches = (pages * ppi) + 0.06;
@@ -142,6 +162,28 @@ export function ExportPanel() {
       spineWidth: Math.round(spineInches * 1000) / 1000,
       spineWidthMm: Math.round(spineInches * 25.4 * 10) / 10,
     });
+  }
+
+  function handleBindingChange(bt: BindingType) {
+    setBindingType(bt);
+    // Auto-select first popular size in new binding, or first size
+    const sizes = getSizesByBinding(bt);
+    const popular = sizes.find(s => s.popular);
+    setTrimSize((popular || sizes[0])?.id || '6x9');
+  }
+
+  function handleGenreChange(g: string) {
+    setGenre(g);
+    // Auto-apply recommendation
+    const rec = GENRE_RECOMMENDATIONS.find(r => r.genre === g);
+    if (rec) {
+      setBindingType(rec.bindingType);
+      setTrimSize(rec.sizeId);
+      // Auto-select recommended format if not already selected
+      if (!exportFormats.includes(rec.format)) {
+        toggleExportFormat(rec.format);
+      }
+    }
   }
 
   return (
@@ -171,6 +213,49 @@ export function ExportPanel() {
           );
         })}
       </div>
+
+      {/* ─── Genre Selector ─── */}
+      <details className="group card-section !p-0 overflow-hidden">
+        <summary className="cursor-pointer text-xs font-semibold text-gray-600 flex items-center gap-2 select-none list-none p-3 hover:bg-gray-50 transition-colors">
+          <span className="text-gray-400 group-open:rotate-90 transition-transform inline-block text-[10px]">▶</span>
+          📚 Genre & Recommendations
+          <span className="font-normal text-gray-300 text-[10px]">auto-configure</span>
+        </summary>
+        <div className="p-3 pt-0 space-y-2 border-t border-gray-50">
+          <select
+            value={genre}
+            onChange={e => handleGenreChange(e.target.value)}
+            className="select-field"
+          >
+            <option value="">Select your genre…</option>
+            {GENRE_RECOMMENDATIONS.map(r => (
+              <option key={r.genre} value={r.genre}>{r.genre}</option>
+            ))}
+          </select>
+          {selectedGenreRec && (
+            <div className="p-2.5 bg-gradient-to-r from-bookify-50 to-violet-50 rounded-lg animate-scale-in">
+              <div className="flex items-start gap-2">
+                <span className="text-sm flex-shrink-0 mt-0.5">💡</span>
+                <div>
+                  <p className="text-[11px] font-semibold text-bookify-700">Recommended Setup</p>
+                  <p className="text-[10px] text-gray-600 mt-0.5 leading-relaxed">{selectedGenreRec.note}</p>
+                  <div className="flex gap-1.5 mt-1.5">
+                    <span className="badge bg-bookify-100 text-bookify-700">
+                      {selectedGenreRec.format.toUpperCase()}
+                    </span>
+                    <span className="badge bg-violet-100 text-violet-700">
+                      {BINDING_INFO[selectedGenreRec.bindingType].label}
+                    </span>
+                    <span className="badge bg-emerald-100 text-emerald-700">
+                      {PRINT_SIZES.find(s => s.id === selectedGenreRec.sizeId)?.label}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </details>
 
       {/* ─── Metadata ─── */}
       <details className="group card-section !p-0 overflow-hidden">
@@ -214,14 +299,80 @@ export function ExportPanel() {
 
       {/* ─── PDF / Print Options ─── */}
       {exportFormats.includes('pdf') && (
-        <div className="card-section space-y-2.5 border-l-[3px] border-l-rose-400 animate-slide-up">
+        <div className="card-section space-y-3 border-l-[3px] border-l-rose-400 animate-slide-up">
           <p className="section-title text-rose-500">Print Settings</p>
+
+          {/* ── Binding Type Selector ── */}
           <div>
-            <label className="text-[11px] text-gray-500 block mb-1">Trim size</label>
-            <select value={trimSize} onChange={e => setTrimSize(e.target.value)} className="select-field">
-              {TRIM_SIZES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-            </select>
+            <label className="text-[11px] text-gray-500 block mb-1.5">Binding type</label>
+            <div className="grid grid-cols-3 gap-1">
+              {(Object.entries(BINDING_INFO) as [BindingType, typeof BINDING_INFO[BindingType]][]).map(([bt, info]) => {
+                const isActive = bindingType === bt;
+                return (
+                  <button
+                    key={bt}
+                    onClick={() => handleBindingChange(bt)}
+                    className={`py-2 px-1.5 rounded-lg text-center transition-all duration-200 border-2
+                      ${isActive
+                        ? 'border-rose-400 bg-rose-50 text-rose-700 shadow-sm scale-[1.02]'
+                        : 'border-gray-100 bg-white text-gray-500 hover:border-gray-200 hover:shadow-sm'}`}
+                  >
+                    <span className="text-base block">{info.icon}</span>
+                    <span className="text-[10px] font-bold block mt-0.5">{info.label}</span>
+                    <span className={`text-[8px] block mt-0.5 ${isActive ? 'text-rose-400' : 'text-gray-300'}`}>{info.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          {/* ── Trim Size with Unit Toggle ── */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[11px] text-gray-500">Trim size</label>
+              <button
+                onClick={() => setMeasurementUnit(measurementUnit === 'in' ? 'cm' : 'in')}
+                className={`px-2 py-0.5 rounded-full text-[9px] font-bold transition-all duration-200 border
+                  ${measurementUnit === 'cm'
+                    ? 'bg-bookify-50 text-bookify-600 border-bookify-200'
+                    : 'bg-gray-50 text-gray-500 border-gray-200'}`}
+              >
+                {measurementUnit === 'in' ? 'inches' : 'cm'} ↻
+              </button>
+            </div>
+            <select
+              value={trimSize}
+              onChange={e => setTrimSize(e.target.value)}
+              className="select-field"
+            >
+              {categories.map(cat => (
+                <optgroup key={cat} label={cat}>
+                  {availableSizes
+                    .filter(s => s.category === cat)
+                    .map(s => (
+                      <option key={s.id} value={s.id}>
+                        {formatDimension(s.widthIn, s.heightIn, measurementUnit)}
+                        {s.subtitle ? `  —  ${s.subtitle}` : ''}
+                        {s.popular ? '  ★' : ''}
+                      </option>
+                    ))
+                  }
+                </optgroup>
+              ))}
+            </select>
+            {/* Size info badge */}
+            {(() => {
+              const sel = PRINT_SIZES.find(s => s.id === trimSize);
+              if (!sel?.bestFor) return null;
+              return (
+                <p className="text-[9px] text-gray-400 mt-1 leading-relaxed pl-1">
+                  <span className="font-semibold text-gray-500">Best for:</span> {sel.bestFor}
+                </p>
+              );
+            })()}
+          </div>
+
+          {/* ── Running Headers ── */}
           <div>
             <label className="text-[11px] text-gray-500 block mb-1">Running headers</label>
             <select value={runningHeader} onChange={e => setRunningHeader(e.target.value)} className="select-field">
@@ -230,6 +381,8 @@ export function ExportPanel() {
               <option value="chapter_title">Chapter Title</option>
             </select>
           </div>
+
+          {/* ── Print Toggles ── */}
           <div className="space-y-1.5">
             <ToggleRow label="Mirror margins (binding)" checked={mirrorMargins} onChange={setMirrorMargins} />
             <ToggleRow label="Orphan/widow control" checked={orphanControl} onChange={setOrphanControl} />
@@ -294,8 +447,8 @@ export function ExportPanel() {
           <div className="space-y-1 animate-slide-up">
             {preflightWarnings.map((w, i) => (
               <div key={i} className={`p-2 rounded-lg text-[10px] font-medium border ${w.level === 'error' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                  w.level === 'warning' ? 'bg-amber-50 text-amber-800 border-amber-200' :
-                    'bg-emerald-50 text-emerald-700 border-emerald-200'
+                w.level === 'warning' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                  'bg-emerald-50 text-emerald-700 border-emerald-200'
                 }`}>
                 <span className="mr-1.5">{w.level === 'error' ? '❌' : w.level === 'warning' ? '⚠️' : '✅'}</span>
                 {w.message}

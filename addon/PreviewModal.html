@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        #app-frame {
+            width: 100%;
+            height: 100vh;
+            border: none;
+            display: none;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f8fafc;
+            color: #64748b;
+            gap: 16px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .loading-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .loading-sub {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 24px;
+            text-align: center;
+            gap: 12px;
+        }
+
+        .error-icon {
+            font-size: 48px;
+        }
+
+        .error-text {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .error-detail {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .retry-btn {
+            margin-top: 8px;
+            padding: 8px 24px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .retry-btn:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Loading State -->
+    <div class="loading" id="loader">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading Fullscreen Preview...</div>
+        <div class="loading-sub">Connecting to formatter</div>
+    </div>
+
+    <!-- Error State -->
+    <div class="error" id="error-view">
+        <div class="error-icon">!</div>
+        <div class="error-text">Failed to load</div>
+        <div class="error-detail" id="error-detail">Could not connect to Bookify. Please check your internet connection.
+        </div>
+        <button class="retry-btn" onclick="loadApp()">Retry</button>
+    </div>
+
+    <!-- React App iframe -->
+    <iframe id="app-frame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
+
+    <script>
+        const FRONTEND_URL = 'https://bookify.pages.dev';
+        const LOAD_TIMEOUT = 15000; // 15 seconds
+
+        const frame = document.getElementById('app-frame');
+        const loader = document.getElementById('loader');
+        const errorView = document.getElementById('error-view');
+        let loadTimer;
+
+        function loadApp() {
+            loader.style.display = 'flex';
+            errorView.style.display = 'none';
+            frame.style.display = 'none';
+
+            // Load the dedicated full-screen preview route
+            frame.src = FRONTEND_URL + '/preview-modal';
+
+            frame.onload = function () {
+                clearTimeout(loadTimer);
+                loader.style.display = 'none';
+                frame.style.display = 'block';
+            };
+
+            // Timeout fallback
+            loadTimer = setTimeout(function () {
+                if (frame.style.display === 'none') {
+                    showError('Loading timed out. The server may be starting up (cold start). Please try again in 30 seconds.');
+                }
+            }, LOAD_TIMEOUT);
+        }
+
+        function showError(detail) {
+            loader.style.display = 'none';
+            frame.style.display = 'none';
+            errorView.style.display = 'flex';
+            document.getElementById('error-detail').textContent = detail;
+        }
+
+        // =========================================================================
+        // Bridge: React frontend <-> Google Apps Script
+        // =========================================================================
+        // The React app sends postMessage to parent (this iframe host).
+        // We forward calls to google.script.run and send results back.
+        // =========================================================================
+
+        window.addEventListener('message', function (event) {
+            // Security: only accept messages from our frontend
+            if (!event.origin.includes('bookify.pages.dev') && !event.origin.includes('bookify.pages.dev') && !event.origin.includes('localhost')) {
+                return;
+            }
+
+            var data = event.data;
+
+            if (data.type === 'GAS_CALL') {
+                var method = data.method;
+                var args = data.args || [];
+                var callbackId = data.callbackId;
+
+                // Check if the function exists
+                if (typeof google === 'undefined' || !google.script || !google.script.run) {
+                    frame.contentWindow.postMessage({
+                        type: 'GAS_ERROR',
+                        callbackId: callbackId,
+                        error: 'Google Apps Script not available'
+                    }, '*');
+                    return;
+                }
+
+                // Build the runner
+                var runner = google.script.run
+                    .withSuccessHandler(function (result) {
+                        frame.contentWindow.postMessage({
+                            type: 'GAS_RESULT',
+                            callbackId: callbackId,
+                            result: result
+                        }, '*');
+                    })
+                    .withFailureHandler(function (error) {
+                        frame.contentWindow.postMessage({
+                            type: 'GAS_ERROR',
+                            callbackId: callbackId,
+                            error: error.message || 'Unknown error'
+                        }, '*');
+                    });
+
+                // Call the function with arguments
+                try {
+                    if (args.length === 0) {
+                        runner[method]();
+                    } else if (args.length === 1) {
+                        runner[method](args[0]);
+                    } else if (args.length === 2) {
+                        runner[method](args[0], args[1]);
+                    } else if (args.length === 3) {
+                        runner[method](args[0], args[1], args[2]);
+                    }
+                } catch (e) {
+                    frame.contentWindow.postMessage({
+                        type: 'GAS_ERROR',
+                        callbackId: callbackId,
+                        error: 'Function not found: ' + method
+                    }, '*');
+                }
+            }
+        });
+
+        // Start loading
+        loadApp();
+    </script>
+</body>
+
+</html>

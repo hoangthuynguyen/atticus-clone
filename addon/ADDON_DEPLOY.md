@@ -9,7 +9,7 @@ Google Docs Sidebar
     ↕ postMessage
 React App (bookify.pages.dev)
     ↕ REST API
-Node.js Backend (bookify-api.onrender.com)
+Node.js Backend (bookify-ixxa.onrender.com)
 ```
 
 ---
@@ -92,7 +92,7 @@ Backend cần Google OAuth để xác thực user.
    - Type: Web Application
    - Name: Bookify Backend
    - Authorized redirect URIs:
-     https://bookify-api.onrender.com/auth/google/callback
+     https://bookify-ixxa.onrender.com/auth/google/callback
 5. Download credentials
 ```
 
@@ -127,7 +127,7 @@ Push lên Render.com và set environment variables trong Render Dashboard.
    f. Trả kết quả về React
 6. User click "Export EPUB":
    a. Apps Script chạy ExportService.gs → getDocumentContent()
-   b. Gọi UrlFetchApp → bookify-api.onrender.com/export/epub
+   b. Gọi UrlFetchApp → bookify-ixxa.onrender.com/export/epub
    c. Backend generate EPUB → upload lên R2
    d. Trả signed URL về
    e. React hiện download link
@@ -169,7 +169,7 @@ Apps Script → ScriptApp.getOAuthToken()
 - Kiểm tra CORS: backend có allow `*.pages.dev` không
 
 ### Export không hoạt động
-- Kiểm tra backend đang chạy: `curl https://bookify-api.onrender.com/health`
+- Kiểm tra backend đang chạy: `curl https://bookify-ixxa.onrender.com/health`
 - Kiểm tra auth token: Apps Script log → `Logger.log(ScriptApp.getOAuthToken())`
 - Kiểm tra R2 credentials trong Render.com env vars
 

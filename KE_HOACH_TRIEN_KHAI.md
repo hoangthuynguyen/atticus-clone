@@ -43,7 +43,7 @@ Google Docs Add-on (Apps Script)
     |                            https://bookify.pages.dev
     |
     |--- UrlFetchApp ---------> Backend API (Render.com)
-    |                            https://bookify-api.onrender.com
+    |                            https://bookify-ixxa.onrender.com
     |                                |
     |                                |--- Supabase (User data, metadata)
     |                                |--- Cloudflare R2 (Export files)
@@ -389,7 +389,7 @@ jobs:
     steps:
       - name: Ping backend
         run: |
-          curl -sf https://bookify-api.onrender.com/health || true
+          curl -sf https://bookify-ixxa.onrender.com/health || true
           echo "Pinged at $(date)"
 ```
 
@@ -408,7 +408,7 @@ jobs:
 # Root directory: / (root of repo)
 
 # Buoc 3: Environment variables
-# VITE_API_URL=https://bookify-api.onrender.com
+# VITE_API_URL=https://bookify-ixxa.onrender.com
 # VITE_SUPABASE_URL=https://xxx.supabase.co
 # VITE_SUPABASE_ANON_KEY=xxx
 ```
@@ -945,7 +945,7 @@ module.exports = { generatePdf };
  * @OnlyCurrentDoc
  */
 
-const API_BASE_URL = 'https://bookify-api.onrender.com';
+const API_BASE_URL = 'https://bookify-ixxa.onrender.com';
 const FRONTEND_URL = 'https://bookify.pages.dev';
 
 function onOpen(e) {
@@ -1390,7 +1390,7 @@ git push origin main
 #    - Add environment variables tu .env
 
 # 3. Verify
-curl https://bookify-api.onrender.com/health
+curl https://bookify-ixxa.onrender.com/health
 ```
 
 #### Ngay 3: Deploy Frontend len Cloudflare Pages
@@ -1403,7 +1403,7 @@ curl https://bookify-api.onrender.com/health
 #      Output directory: frontend/dist
 
 # 2. Add env vars:
-#    VITE_API_URL=https://bookify-api.onrender.com
+#    VITE_API_URL=https://bookify-ixxa.onrender.com
 
 # 3. Deploy & verify: https://bookify.pages.dev
 ```

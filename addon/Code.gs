@@ -9,7 +9,7 @@
 // =============================================================================
 
 const CONFIG = {
-  API_BASE_URL: 'https://bookify-api.onrender.com',
+  API_BASE_URL: 'https://bookify-ixxa.onrender.com',
   FRONTEND_URL: 'https://bookify.pages.dev',
   SIDEBAR_WIDTH: 350,
   SIDEBAR_TITLE: 'Bookify',
@@ -84,7 +84,7 @@ function onFileScopeGranted(e) {
 }
 
 // =============================================================================
-// Sidebar
+// Sidebar & Modals
 // =============================================================================
 
 /**
@@ -95,6 +95,16 @@ function openSidebar() {
     .setTitle(CONFIG.SIDEBAR_TITLE)
     .setWidth(CONFIG.SIDEBAR_WIDTH);
   DocumentApp.getUi().showSidebar(html);
+}
+
+/**
+ * Opens the Fullscreen Preview device simulator in a Modal Dialog.
+ */
+function openFullscreenPreview() {
+  const html = HtmlService.createHtmlOutputFromFile('PreviewModal')
+    .setWidth(900)
+    .setHeight(700);
+  DocumentApp.getUi().showModalDialog(html, 'Live Device Preview');
 }
 
 // =============================================================================

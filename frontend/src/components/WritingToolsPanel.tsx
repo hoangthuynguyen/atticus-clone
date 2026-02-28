@@ -21,11 +21,12 @@ interface StreakData {
   last30Days: Array<{ date: string; words: number; wrote: boolean }>;
 }
 
-type Section = 'wordcount' | 'sprint' | 'streak' | 'quotes' | 'analyze' | 'dpi';
+type Section = 'wordcount' | 'sprint' | 'pacing' | 'streak' | 'quotes' | 'analyze' | 'dpi';
 
 const SECTIONS: { id: Section; label: string; icon: string }[] = [
   { id: 'wordcount', label: 'Words', icon: '#' },
   { id: 'sprint', label: 'Sprint', icon: '⏱' },
+  { id: 'pacing', label: 'Pacing', icon: '📈' },
   { id: 'streak', label: 'Streak', icon: '🔥' },
   { id: 'quotes', label: 'Quotes', icon: '"' },
   { id: 'analyze', label: 'Analyze', icon: '≡' },
@@ -269,6 +270,8 @@ function SprintTimerSection() {
   );
 }
 
+// =============================================================================
+// Pacing Visualizer
 // =============================================================================
 // Writing Streak
 // =============================================================================

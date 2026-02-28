@@ -17,7 +17,7 @@ interface ThemePresetI {
   sceneBreakSymbol: string;
 }
 
-const API_URL = (import.meta as unknown as { env: Record<string, string> }).env?.VITE_API_URL || 'https://bookify-api.onrender.com';
+const API_URL = (import.meta as unknown as { env: Record<string, string> }).env?.VITE_API_URL || 'https://bookify-ixxa.onrender.com';
 
 export function ThemePanel() {
   const [themes, setThemes] = useState<ThemePresetI[]>([]);

@@ -15,18 +15,26 @@ interface Location {
     description: string;
 }
 
+interface PlotEvent {
+    id: string;
+    title: string;
+    description: string;
+    order: number;
+}
+
 interface BibleData {
     characters: Character[];
     locations: Location[];
+    events: PlotEvent[];
 }
 
 function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
 }
 
-export function CharacterBiblePanel() {
-    const [activeTab, setActiveTab] = useState<'characters' | 'locations'>('characters');
-    const [data, setData] = useState<BibleData>({ characters: [], locations: [] });
+export function StoryBiblePanel() {
+    const [activeTab, setActiveTab] = useState<'characters' | 'locations' | 'plot'>('characters');
+    const [data, setData] = useState<BibleData>({ characters: [], locations: [], events: [] });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [search, setSearch] = useState('');
@@ -36,7 +44,7 @@ export function CharacterBiblePanel() {
     async function loadData() {
         try {
             const result = await callGas<BibleData>('getCharacterBible');
-            setData(result || { characters: [], locations: [] });
+            setData(result || { characters: [], locations: [], events: [] });
         } catch {
             // Start fresh
         } finally {
@@ -86,6 +94,21 @@ export function CharacterBiblePanel() {
         saveData({ ...data, locations: data.locations.filter(l => l.id !== id) });
     }
 
+    // — Plot Event CRUD —
+    function addPlotEvent() {
+        const newEvent: PlotEvent = { id: generateId(), title: 'New Event', description: '', order: data.events.length };
+        saveData({ ...data, events: [...data.events, newEvent] });
+    }
+
+    function updatePlotEvent(id: string, field: keyof PlotEvent, value: string | number) {
+        const updated = data.events.map(e => e.id === id ? { ...e, [field]: value } : e);
+        saveData({ ...data, events: updated });
+    }
+
+    function deletePlotEvent(id: string) {
+        saveData({ ...data, events: data.events.filter(e => e.id !== id) });
+    }
+
     // Filter by search
     const filteredChars = data.characters.filter(c =>
         c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -94,6 +117,9 @@ export function CharacterBiblePanel() {
     const filteredLocs = data.locations.filter(l =>
         l.name.toLowerCase().includes(search.toLowerCase())
     );
+    const filteredEvents = data.events.filter(e =>
+        e.title.toLowerCase().includes(search.toLowerCase())
+    ).sort((a, b) => a.order - b.order);
 
     if (loading) {
         return (
@@ -142,7 +168,14 @@ export function CharacterBiblePanel() {
                     className={`flex-1 py-1.5 rounded-md text-[11px] font-semibold transition-all duration-200
             ${activeTab === 'locations' ? 'bg-white text-bookify-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 >
-                    📍 Locations ({data.locations.length})
+                    📍 World ({data.locations.length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('plot')}
+                    className={`flex-1 py-1.5 rounded-md text-[11px] font-semibold transition-all duration-200
+            ${activeTab === 'plot' ? 'bg-white text-bookify-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                    ⏱️ Plot ({data.events.length})
                 </button>
             </div>
 
@@ -177,7 +210,7 @@ export function CharacterBiblePanel() {
                         <div className="text-center py-8 text-gray-400">
                             <p className="text-2xl mb-2">📍</p>
                             <p className="text-xs font-medium">No locations yet</p>
-                            <p className="text-[10px] mt-1">Add locations to build your world</p>
+                            <p className="text-[10px] mt-1">Add locations and items to build your world</p>
                         </div>
                     )}
                     {filteredLocs.map(loc => (
@@ -189,7 +222,34 @@ export function CharacterBiblePanel() {
                         />
                     ))}
                     <button onClick={addLocation} className="btn-primary mt-2">
-                        + Add Location
+                        + Add World Item
+                    </button>
+                </div>
+            )}
+
+            {/* Plot List */}
+            {activeTab === 'plot' && (
+                <div className="space-y-2 animate-fade-in relative before:absolute before:left-5 before:top-2 before:bottom-10 before:w-0.5 before:bg-indigo-100">
+                    {filteredEvents.length === 0 && (
+                        <div className="text-center py-8 text-gray-400">
+                            <p className="text-2xl mb-2">⏱️</p>
+                            <p className="text-xs font-medium">No plot events yet</p>
+                            <p className="text-[10px] mt-1">Add events to build your timeline</p>
+                        </div>
+                    )}
+                    <div className="relative pl-10 space-y-3">
+                        {filteredEvents.map((event, index) => (
+                            <PlotEventCard
+                                key={event.id}
+                                event={event}
+                                index={index + 1}
+                                onUpdate={(field, value) => updatePlotEvent(event.id, field, value)}
+                                onDelete={() => deletePlotEvent(event.id)}
+                            />
+                        ))}
+                    </div>
+                    <button onClick={addPlotEvent} className="btn-primary mt-4 w-full">
+                        + Add Plot Event
                     </button>
                 </div>
             )}
@@ -280,12 +340,48 @@ function LocationCard({ location, onUpdate, onDelete }: {
                     <textarea
                         value={location.description}
                         onChange={(e) => onUpdate('description', e.target.value)}
-                        placeholder="Describe this location…"
+                        placeholder="Describe this world element…"
                         rows={1}
                         className="w-full text-[10px] text-gray-500 bg-transparent border-none outline-none resize-none mt-0.5 p-0 focus:bg-emerald-50 focus:px-1 rounded transition-all"
                     />
                 </div>
                 <button onClick={onDelete} className="btn-ghost text-rose-400 hover:text-rose-600 text-[10px] px-1.5 opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+            </div>
+        </div>
+    );
+}
+
+function PlotEventCard({ event, index, onUpdate, onDelete }: {
+    event: PlotEvent;
+    index: number;
+    onUpdate: (field: keyof PlotEvent, value: string) => void;
+    onDelete: () => void;
+}) {
+    return (
+        <div className="relative group bg-white rounded-xl shadow-sm border border-gray-100 p-2.5 hover:border-indigo-200 transition-all">
+            {/* Timeline Node */}
+            <div className="absolute -left-10 top-3.5 w-6 h-6 rounded-full bg-white border-2 border-indigo-400 flex items-center justify-center z-10 shadow-sm">
+                <span className="text-[9px] font-bold text-indigo-600">{index}</span>
+            </div>
+
+            <div className="flex items-start gap-2">
+                <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+                    <input
+                        type="text"
+                        value={event.title}
+                        onChange={(e) => onUpdate('title', e.target.value)}
+                        placeholder="Event Title..."
+                        className="text-xs font-semibold text-gray-800 bg-transparent border-none outline-none w-full p-0 focus:bg-indigo-50 focus:px-1 rounded transition-all"
+                    />
+                    <textarea
+                        value={event.description}
+                        onChange={(e) => onUpdate('description', e.target.value)}
+                        placeholder="What happens in this event?..."
+                        rows={2}
+                        className="w-full text-[10px] text-gray-500 bg-transparent border border-transparent outline-none resize-none p-1 focus:border-indigo-100 focus:bg-indigo-50/30 rounded transition-all"
+                    />
+                </div>
+                <button onClick={onDelete} className="flex-shrink-0 text-rose-400 hover:text-rose-600 text-[10px] px-1.5 opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
             </div>
         </div>
     );

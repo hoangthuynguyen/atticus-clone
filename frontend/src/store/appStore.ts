@@ -1,6 +1,7 @@
 import { create } from 'zustand';
+import type { BindingType, MeasurementUnit } from '../data/printSizes';
 
-type Tab = 'export' | 'formatting' | 'themes' | 'tools' | 'structure' | 'previewer' | 'versions' | 'boxset' | 'bible';
+type Tab = 'export' | 'formatting' | 'themes' | 'tools' | 'structure' | 'previewer' | 'versions' | 'boxset' | 'bible' | 'automation' | 'design' | 'publishing';
 
 interface AppState {
   activeTab: Tab;
@@ -11,6 +12,12 @@ interface AppState {
   toggleExportFormat: (format: string) => void;
   trimSize: string;
   setTrimSize: (size: string) => void;
+  bindingType: BindingType;
+  setBindingType: (bt: BindingType) => void;
+  genre: string;
+  setGenre: (g: string) => void;
+  measurementUnit: MeasurementUnit;
+  setMeasurementUnit: (u: MeasurementUnit) => void;
   isExporting: boolean;
   setIsExporting: (v: boolean) => void;
   lastExportUrl: string | null;
@@ -41,6 +48,12 @@ export const useAppStore = create<AppState>((set) => ({
   })),
   trimSize: '6x9',
   setTrimSize: (size) => set({ trimSize: size }),
+  bindingType: 'paperback',
+  setBindingType: (bt) => set({ bindingType: bt }),
+  genre: '',
+  setGenre: (g) => set({ genre: g }),
+  measurementUnit: 'in',
+  setMeasurementUnit: (u) => set({ measurementUnit: u }),
   isExporting: false,
   setIsExporting: (v) => set({ isExporting: v }),
   lastExportUrl: null,

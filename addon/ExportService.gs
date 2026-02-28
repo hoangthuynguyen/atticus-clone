@@ -144,6 +144,120 @@ function exportEpub(settings) {
 }
 
 /**
+ * Export document as AZW3/Kindle Format.
+ * Internally uses Kindle-optimized EPUB as recommended by Amazon KDP.
+ * @param {object} settings - Export settings from sidebar
+ * @returns {object} { downloadUrl, filename, size, sizeFormatted, chapterCount }
+ */
+function exportAzw3(settings) {
+  try {
+    var content = getDocumentContent();
+    var htmlContent = content.html;
+    var storeLink = 'https://amazon.com/author/example'; // Force Amazon links
+    htmlContent = htmlContent.replace(/\[Store Link\]/gi, storeLink);
+
+    var result = callExportAPI('/export/azw3', {
+      docContent: htmlContent,
+      docId: content.metadata.id,
+      metadata: Object.assign({}, content.metadata, settings.metadataOverrides || {}),
+      theme: settings.theme || {},
+      settings: {
+        dropCaps: settings.dropCaps || false,
+        sceneBreakSymbol: settings.sceneBreakSymbol || '* * *',
+        includeChapters: settings.includeChapters || [],
+      },
+    });
+    return result;
+  } catch (error) {
+    throw new Error('AZW3/Kindle export failed: ' + error.message);
+  }
+}
+
+/**
+ * Export document as KFX (Kindle Format 10).
+ * Internally uses Kindle-optimized EPUB as recommended by Amazon KDP.
+ * @param {object} settings - Export settings from sidebar
+ */
+function exportKfx(settings) {
+  try {
+    var content = getDocumentContent();
+    var htmlContent = content.html;
+    var storeLink = 'https://amazon.com/author/example';
+    htmlContent = htmlContent.replace(/\[Store Link\]/gi, storeLink);
+
+    return callExportAPI('/export/kfx', {
+      docContent: htmlContent,
+      docId: content.metadata.id,
+      metadata: Object.assign({}, content.metadata, settings.metadataOverrides || {}),
+      theme: settings.theme || {},
+      settings: {
+        dropCaps: settings.dropCaps || false,
+        sceneBreakSymbol: settings.sceneBreakSymbol || '* * *',
+        includeChapters: settings.includeChapters || [],
+      },
+    });
+  } catch (error) {
+    throw new Error('KFX export failed: ' + error.message);
+  }
+}
+
+/**
+ * Export document as AZW (Original Kindle).
+ * Internally uses Kindle-optimized EPUB as recommended by Amazon KDP.
+ * @param {object} settings - Export settings from sidebar
+ */
+function exportAzw(settings) {
+  try {
+    var content = getDocumentContent();
+    var htmlContent = content.html;
+    var storeLink = 'https://amazon.com/author/example';
+    htmlContent = htmlContent.replace(/\[Store Link\]/gi, storeLink);
+
+    return callExportAPI('/export/azw', {
+      docContent: htmlContent,
+      docId: content.metadata.id,
+      metadata: Object.assign({}, content.metadata, settings.metadataOverrides || {}),
+      theme: settings.theme || {},
+      settings: {
+        dropCaps: settings.dropCaps || false,
+        sceneBreakSymbol: settings.sceneBreakSymbol || '* * *',
+        includeChapters: settings.includeChapters || [],
+      },
+    });
+  } catch (error) {
+    throw new Error('AZW export failed: ' + error.message);
+  }
+}
+
+/**
+ * Export document as MOBI (Legacy Kindle).
+ * Internally uses Kindle-optimized EPUB as recommended by Amazon KDP.
+ * @param {object} settings - Export settings from sidebar
+ */
+function exportMobi(settings) {
+  try {
+    var content = getDocumentContent();
+    var htmlContent = content.html;
+    var storeLink = 'https://amazon.com/author/example';
+    htmlContent = htmlContent.replace(/\[Store Link\]/gi, storeLink);
+
+    return callExportAPI('/export/mobi', {
+      docContent: htmlContent,
+      docId: content.metadata.id,
+      metadata: Object.assign({}, content.metadata, settings.metadataOverrides || {}),
+      theme: settings.theme || {},
+      settings: {
+        dropCaps: settings.dropCaps || false,
+        sceneBreakSymbol: settings.sceneBreakSymbol || '* * *',
+        includeChapters: settings.includeChapters || [],
+      },
+    });
+  } catch (error) {
+    throw new Error('MOBI export failed: ' + error.message);
+  }
+}
+
+/**
  * Export multiple documents as a single EPUB Box Set.
  * @param {object} settings - Export settings containing URLs
  * @returns {object} { downloadUrl, filename, size, sizeFormatted, chapterCount }

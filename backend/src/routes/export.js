@@ -64,6 +64,250 @@ router.post('/epub', async (req, res) => {
 });
 
 // =============================================================================
+// POST /export/azw3 (Kindle)
+// =============================================================================
+
+router.post('/azw3', async (req, res) => {
+  try {
+    const { docContent, docId, metadata, theme, settings } = req.body;
+
+    if (!docContent) {
+      return res.status(400).json({ error: 'docContent is required', code: 'MISSING_CONTENT' });
+    }
+
+    console.log(`[AZW3/Kindle] Starting export for doc ${docId} by ${req.user.email}`);
+
+    // Generate EPUB as Amazon prefers EPUB for modern Kindle ingestion
+    const result = await generateEpub(
+      docContent,
+      metadata || {},
+      theme || {},
+      settings || {}
+    );
+
+    const filename = result.filename.replace('.epub', '_Kindle.epub');
+
+    // Upload to Cloudflare R2
+    const { signedUrl, key } = await uploadExportFile(
+      result.buffer,
+      filename,
+      'application/epub+zip',
+      req.user.id
+    );
+
+    // Save to export history
+    await saveExportHistory(
+      req.user.id,
+      docId || 'unknown',
+      'azw3',
+      signedUrl,
+      result.buffer.length,
+      { ...metadata, chapterCount: result.chapterCount, r2Key: key }
+    );
+
+    console.log(`[AZW3/Kindle] Export complete: ${filename}`);
+
+    res.json({
+      downloadUrl: signedUrl,
+      filename: filename,
+      size: result.buffer.length,
+      sizeFormatted: formatBytes(result.buffer.length),
+      chapterCount: result.chapterCount,
+    });
+  } catch (error) {
+    console.error('[AZW3] Export failed:', error);
+    res.status(500).json({
+      error: 'AZW3/Kindle export failed',
+      code: 'AZW3_EXPORT_FAILED',
+      details: error.message,
+    });
+  }
+});
+
+// =============================================================================
+// POST /export/kfx (Kindle Format 10)
+// =============================================================================
+
+router.post('/kfx', async (req, res) => {
+  try {
+    const { docContent, docId, metadata, theme, settings } = req.body;
+
+    if (!docContent) {
+      return res.status(400).json({ error: 'docContent is required', code: 'MISSING_CONTENT' });
+    }
+
+    console.log(`[KFX] Starting export for doc ${docId} by ${req.user.email}`);
+
+    // Generate EPUB as Amazon prefers EPUB for modern Kindle ingestion
+    const result = await generateEpub(
+      docContent,
+      metadata || {},
+      theme || {},
+      settings || {}
+    );
+
+    const filename = result.filename.replace('.epub', '_KFX.epub');
+
+    // Upload to Cloudflare R2
+    const { signedUrl, key } = await uploadExportFile(
+      result.buffer,
+      filename,
+      'application/epub+zip',
+      req.user.id
+    );
+
+    // Save to export history
+    await saveExportHistory(
+      req.user.id,
+      docId || 'unknown',
+      'kfx',
+      signedUrl,
+      result.buffer.length,
+      { ...metadata, chapterCount: result.chapterCount, r2Key: key }
+    );
+
+    console.log(`[KFX] Export complete: ${filename}`);
+
+    res.json({
+      downloadUrl: signedUrl,
+      filename: filename,
+      size: result.buffer.length,
+      sizeFormatted: formatBytes(result.buffer.length),
+      chapterCount: result.chapterCount,
+    });
+  } catch (error) {
+    console.error('[KFX] Export failed:', error);
+    res.status(500).json({
+      error: 'KFX export failed',
+      code: 'KFX_EXPORT_FAILED',
+      details: error.message,
+    });
+  }
+});
+
+// =============================================================================
+// POST /export/azw (Original Kindle)
+// =============================================================================
+
+router.post('/azw', async (req, res) => {
+  try {
+    const { docContent, docId, metadata, theme, settings } = req.body;
+
+    if (!docContent) {
+      return res.status(400).json({ error: 'docContent is required', code: 'MISSING_CONTENT' });
+    }
+
+    console.log(`[AZW] Starting export for doc ${docId} by ${req.user.email}`);
+
+    // Generate EPUB as Amazon prefers EPUB for modern Kindle ingestion
+    const result = await generateEpub(
+      docContent,
+      metadata || {},
+      theme || {},
+      settings || {}
+    );
+
+    const filename = result.filename.replace('.epub', '_AZW.epub');
+
+    // Upload to Cloudflare R2
+    const { signedUrl, key } = await uploadExportFile(
+      result.buffer,
+      filename,
+      'application/epub+zip',
+      req.user.id
+    );
+
+    // Save to export history
+    await saveExportHistory(
+      req.user.id,
+      docId || 'unknown',
+      'azw',
+      signedUrl,
+      result.buffer.length,
+      { ...metadata, chapterCount: result.chapterCount, r2Key: key }
+    );
+
+    console.log(`[AZW] Export complete: ${filename}`);
+
+    res.json({
+      downloadUrl: signedUrl,
+      filename: filename,
+      size: result.buffer.length,
+      sizeFormatted: formatBytes(result.buffer.length),
+      chapterCount: result.chapterCount,
+    });
+  } catch (error) {
+    console.error('[AZW] Export failed:', error);
+    res.status(500).json({
+      error: 'AZW export failed',
+      code: 'AZW_EXPORT_FAILED',
+      details: error.message,
+    });
+  }
+});
+
+// =============================================================================
+// POST /export/mobi (Legacy Kindle)
+// =============================================================================
+
+router.post('/mobi', async (req, res) => {
+  try {
+    const { docContent, docId, metadata, theme, settings } = req.body;
+
+    if (!docContent) {
+      return res.status(400).json({ error: 'docContent is required', code: 'MISSING_CONTENT' });
+    }
+
+    console.log(`[MOBI] Starting export for doc ${docId} by ${req.user.email}`);
+
+    // Generate EPUB as Amazon prefers EPUB for modern Kindle ingestion
+    const result = await generateEpub(
+      docContent,
+      metadata || {},
+      theme || {},
+      settings || {}
+    );
+
+    const filename = result.filename.replace('.epub', '_MOBI.epub');
+
+    // Upload to Cloudflare R2
+    const { signedUrl, key } = await uploadExportFile(
+      result.buffer,
+      filename,
+      'application/epub+zip',
+      req.user.id
+    );
+
+    // Save to export history
+    await saveExportHistory(
+      req.user.id,
+      docId || 'unknown',
+      'mobi',
+      signedUrl,
+      result.buffer.length,
+      { ...metadata, chapterCount: result.chapterCount, r2Key: key }
+    );
+
+    console.log(`[MOBI] Export complete: ${filename}`);
+
+    res.json({
+      downloadUrl: signedUrl,
+      filename: filename,
+      size: result.buffer.length,
+      sizeFormatted: formatBytes(result.buffer.length),
+      chapterCount: result.chapterCount,
+    });
+  } catch (error) {
+    console.error('[MOBI] Export failed:', error);
+    res.status(500).json({
+      error: 'MOBI export failed',
+      code: 'MOBI_EXPORT_FAILED',
+      details: error.message,
+    });
+  }
+});
+
+// =============================================================================
 // POST /export/pdf
 // =============================================================================
 

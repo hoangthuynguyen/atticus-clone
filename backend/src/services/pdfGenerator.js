@@ -6,25 +6,27 @@ const path = require('path');
 // WeasyPrint uses ~100MB RAM vs Puppeteer's ~1.5GB - fits Render.com free tier
 // =============================================================================
 
-// Trim size definitions: name -> { width_mm, height_mm }
+// Trim size definitions: name -> { width_mm, height_mm, binding[] }
 const TRIM_SIZES = {
-  '5x8': { width: 127, height: 203, label: '5" x 8"' },
-  '5.06x7.81': { width: 128.5, height: 198.4, label: '5.06" x 7.81"' },
-  '5.25x8': { width: 133.4, height: 203, label: '5.25" x 8"' },
-  '5.5x8.5': { width: 139.7, height: 215.9, label: '5.5" x 8.5"' },
-  '6x9': { width: 152.4, height: 228.6, label: '6" x 9"' },
-  '6.14x9.21': { width: 156, height: 234, label: '6.14" x 9.21"' },
-  '6.69x9.61': { width: 170, height: 244, label: '6.69" x 9.61"' },
-  '7x10': { width: 177.8, height: 254, label: '7" x 10"' },
-  '7.44x9.69': { width: 189, height: 246, label: '7.44" x 9.69"' },
-  '7.5x9.25': { width: 190.5, height: 235, label: '7.5" x 9.25"' },
-  '8x10': { width: 203.2, height: 254, label: '8" x 10"' },
-  '8.25x6': { width: 209.6, height: 152.4, label: '8.25" x 6"' },
-  '8.25x8.25': { width: 209.6, height: 209.6, label: '8.25" x 8.25"' },
-  '8.5x8.5': { width: 215.9, height: 215.9, label: '8.5" x 8.5"' },
-  '8.5x11': { width: 215.9, height: 279.4, label: '8.5" x 11" (Letter)' },
-  '8.27x11.69': { width: 210, height: 297, label: 'A4' },
-  '11x8.5': { width: 279.4, height: 215.9, label: '11" x 8.5" (Landscape)' },
+  '4.25x6.87': { width: 108, height: 174.5, label: '4.25" x 6.87" (Mass-Market)', binding: ['paperback'] },
+  '5x8': { width: 127, height: 203, label: '5" x 8"', binding: ['paperback'] },
+  '5.06x7.81': { width: 128.5, height: 198.4, label: '5.06" x 7.81" (B-Format)', binding: ['paperback'] },
+  '5.25x8': { width: 133.4, height: 203, label: '5.25" x 8"', binding: ['paperback'] },
+  '5.5x8.5': { width: 139.7, height: 215.9, label: '5.5" x 8.5" (Digest)', binding: ['paperback', 'spiral'] },
+  '6x9': { width: 152.4, height: 228.6, label: '6" x 9" (US Trade)', binding: ['paperback', 'hardcover'] },
+  '6.14x9.21': { width: 156, height: 234, label: '6.14" x 9.21" (Royal)', binding: ['paperback', 'hardcover'] },
+  '6.69x9.61': { width: 170, height: 244, label: '6.69" x 9.61" (Pinched Crown)', binding: ['paperback'] },
+  '7x10': { width: 177.8, height: 254, label: '7" x 10" (Large Format)', binding: ['paperback', 'spiral'] },
+  '7.44x9.69': { width: 189, height: 246, label: '7.44" x 9.69" (Crown Quarto)', binding: ['paperback'] },
+  '7.5x9.25': { width: 190.5, height: 235, label: '7.5" x 9.25"', binding: ['paperback'] },
+  '8x10': { width: 203.2, height: 254, label: '8" x 10" (Picture Book)', binding: ['paperback', 'hardcover'] },
+  '8.25x6': { width: 209.6, height: 152.4, label: '8.25" x 6"', binding: ['paperback'] },
+  '8.25x11': { width: 209.6, height: 279.4, label: '8.25" x 11" (Coffee Table)', binding: ['hardcover'] },
+  '8.25x8.25': { width: 209.6, height: 209.6, label: '8.25" x 8.25"', binding: ['hardcover'] },
+  '8.5x8.5': { width: 215.9, height: 215.9, label: '8.5" x 8.5" (Square)', binding: ['hardcover'] },
+  '8.5x11': { width: 215.9, height: 279.4, label: '8.5" x 11" (Letter)', binding: ['paperback', 'hardcover', 'spiral'] },
+  '8.27x11.69': { width: 210, height: 297, label: 'A4 (8.27" x 11.69")', binding: ['paperback', 'spiral'] },
+  '11x8.5': { width: 279.4, height: 215.9, label: '11" x 8.5" (Landscape)', binding: ['spiral'] },
 };
 
 /**
