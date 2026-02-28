@@ -19,6 +19,69 @@ interface ThemePresetI {
 
 const API_URL = (import.meta as unknown as { env: Record<string, string> }).env?.VITE_API_URL || 'https://bookify-ixxa.onrender.com';
 
+const FALLBACK_THEMES: ThemePresetI[] = [
+  {
+    id: 't1',
+    name: 'Vellum Classic',
+    genre: 'Literary Fiction / Memoir',
+    bodyFont: 'Georgia',
+    headingFont: 'Cinzel',
+    fontSize: '11pt',
+    lineHeight: 1.6,
+    colorAccent: '#333333',
+    dropCaps: true,
+    sceneBreakSymbol: '* * *',
+  },
+  {
+    id: 't2',
+    name: 'Romance Script',
+    genre: 'Romance / Women\'s Fiction',
+    bodyFont: 'Lora',
+    headingFont: 'Great Vibes',
+    fontSize: '11pt',
+    lineHeight: 1.6,
+    colorAccent: '#be185d',
+    dropCaps: true,
+    sceneBreakSymbol: '♡ ♡ ♡',
+  },
+  {
+    id: 't3',
+    name: 'Sci-Fi Minimal',
+    genre: 'Sci-Fi / Thriller / Modern',
+    bodyFont: 'Lato',
+    headingFont: 'Oswald',
+    fontSize: '10.5pt',
+    lineHeight: 1.5,
+    colorAccent: '#0ea5e9',
+    dropCaps: false,
+    sceneBreakSymbol: '- - -',
+  },
+  {
+    id: 't4',
+    name: 'Epic Fantasy',
+    genre: 'Fantasy / Historical',
+    bodyFont: 'EB Garamond',
+    headingFont: 'Merriweather',
+    fontSize: '11.5pt',
+    lineHeight: 1.5,
+    colorAccent: '#6b21a8',
+    dropCaps: true,
+    sceneBreakSymbol: '✦ ✦ ✦',
+  },
+  {
+    id: 't5',
+    name: 'Clean Non-Fiction',
+    genre: 'Business / Self-Help',
+    bodyFont: 'PT Serif',
+    headingFont: 'Montserrat',
+    fontSize: '11pt',
+    lineHeight: 1.6,
+    colorAccent: '#0f766e',
+    dropCaps: false,
+    sceneBreakSymbol: '• • •',
+  }
+];
+
 export function ThemePanel() {
   const [themes, setThemes] = useState<ThemePresetI[]>([]);
   const [tab, setTab] = useState<'presets' | 'custom'>('presets');
@@ -41,12 +104,14 @@ export function ThemePanel() {
   useEffect(() => { fetchThemes(); }, []);
 
   async function fetchThemes() {
+    setLoading(true);
     try {
       const res = await fetch(`${API_URL}/themes/presets`);
+      if (!res.ok) throw new Error('API Request Failed');
       const data = await res.json();
-      setThemes(data.themes || []);
+      setThemes(data.themes && data.themes.length > 0 ? data.themes : FALLBACK_THEMES);
     } catch {
-      setStatus({ text: 'Failed to load themes. Using offline mode.', ok: false });
+      setThemes(FALLBACK_THEMES);
     } finally {
       setLoading(false);
     }

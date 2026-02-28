@@ -14,7 +14,7 @@
   "addOns": {
     "common": {
       "name": "Bookify",
-      "logoUrl": "https://bookify.pages.dev/logo-32.png",
+      "logoUrl": "https://bookify-ixxa.onrender.com/logo-32.png",
       "layoutProperties": {
         "primaryColor": "#0f172a",
         "secondaryColor": "#3b82f6"

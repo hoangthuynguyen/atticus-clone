@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(helmet());
 const allowedOrigins = [
-  process.env.FRONTEND_URL || 'https://bookify.pages.dev',
+  process.env.FRONTEND_URL || 'https://bookify-ixxa.onrender.com',
   /\.google\.com$/,
   /script\.google\.com$/,
   // Dev

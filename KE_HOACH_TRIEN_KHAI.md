@@ -40,7 +40,7 @@
 Google Docs Add-on (Apps Script)
     |
     |--- google.script.run ---> Frontend (Cloudflare Pages)
-    |                            https://bookify.pages.dev
+    |                            https://bookify-ixxa.onrender.com
     |
     |--- UrlFetchApp ---------> Backend API (Render.com)
     |                            https://bookify-ixxa.onrender.com
@@ -472,7 +472,7 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 app.use(cors({
   origin: [
-    'https://bookify.pages.dev',
+    'https://bookify-ixxa.onrender.com',
     /\.google\.com$/,
     /script\.google\.com$/
   ]
@@ -946,7 +946,7 @@ module.exports = { generatePdf };
  */
 
 const API_BASE_URL = 'https://bookify-ixxa.onrender.com';
-const FRONTEND_URL = 'https://bookify.pages.dev';
+const FRONTEND_URL = 'https://bookify-ixxa.onrender.com';
 
 function onOpen(e) {
   DocumentApp.getUi()
@@ -1405,7 +1405,7 @@ curl https://bookify-ixxa.onrender.com/health
 # 2. Add env vars:
 #    VITE_API_URL=https://bookify-ixxa.onrender.com
 
-# 3. Deploy & verify: https://bookify.pages.dev
+# 3. Deploy & verify: https://bookify-ixxa.onrender.com
 ```
 
 #### Ngay 4-5: Deploy Add-on + End-to-End Testing

@@ -10,7 +10,7 @@
 
 const CONFIG = {
   API_BASE_URL: 'https://bookify-ixxa.onrender.com',
-  FRONTEND_URL: 'https://bookify.pages.dev',
+  FRONTEND_URL: 'https://bookify-ixxa.onrender.com',
   SIDEBAR_WIDTH: 350,
   SIDEBAR_TITLE: 'Bookify',
 };
