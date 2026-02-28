@@ -306,18 +306,42 @@ export function ThemePanel() {
     setApplying(true);
     setStatus(null);
     try {
-      await callGas('applyTheme', {
+      // Apply typography and font styles to the document
+      await callGas<{ success: boolean; appliedTheme: string }>('applyTheme', {
         name: theme.name,
         bodyFont: theme.bodyFont,
         headingFont: theme.headingFont,
         fontSize: theme.fontSize,
         lineHeight: theme.lineHeight,
         colorAccent: theme.colorAccent,
+        dropCaps: theme.dropCaps,
+        sceneBreakSymbol: theme.sceneBreakSymbol,
       });
+
+      // Also apply scene break style if theme has one
+      if (theme.sceneBreakSymbol) {
+        try {
+          await callGas('applySceneBreakStyle', theme.sceneBreakSymbol);
+        } catch {
+          // Scene break update is optional — don't fail the whole operation
+        }
+      }
+
       setSelectedId(theme.id);
-      setStatus({ text: `Theme "${theme.name}" applied!`, ok: true });
+      setStatus({
+        text: `✅ Theme "${theme.name}" applied! Font: ${theme.bodyFont}, Headings: ${theme.headingFont}, Size: ${theme.fontSize}`,
+        ok: true,
+      });
     } catch (err) {
-      setStatus({ text: `Error: ${err instanceof Error ? err.message : String(err)}`, ok: false });
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      if (errorMessage.includes('Google Apps Script not available')) {
+        setStatus({
+          text: '⚠️ Theme cannot be applied outside Google Docs. Open this sidebar from within Google Docs to apply themes.',
+          ok: false,
+        });
+      } else {
+        setStatus({ text: `❌ Error applying theme: ${errorMessage}`, ok: false });
+      }
     } finally {
       setApplying(false);
     }

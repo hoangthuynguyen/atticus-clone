@@ -3,6 +3,40 @@
  */
 
 // =============================================================================
+// Heading Management (used by Structure Panel)
+// =============================================================================
+
+/**
+ * Rename a heading in the document.
+ * @param {string} oldText - The current text of the heading
+ * @param {string} newText - The new text to rename it to
+ * @returns {{ success: boolean }}
+ */
+function renameHeading(oldText, newText) {
+  try {
+    var doc = DocumentApp.getActiveDocument();
+    var body = doc.getBody();
+    var numChildren = body.getNumChildren();
+
+    for (var i = 0; i < numChildren; i++) {
+      var child = body.getChild(i);
+      if (child.getType() === DocumentApp.ElementType.PARAGRAPH) {
+        var para = child.asParagraph();
+        var heading = para.getHeading();
+        if (heading !== DocumentApp.ParagraphHeading.NORMAL && para.getText() === oldText) {
+          para.setText(newText);
+          return { success: true };
+        }
+      }
+    }
+
+    throw new Error('Heading "' + oldText + '" not found in document.');
+  } catch (error) {
+    throw new Error('Rename heading failed: ' + error.message);
+  }
+}
+
+// =============================================================================
 // Word Count
 // =============================================================================
 

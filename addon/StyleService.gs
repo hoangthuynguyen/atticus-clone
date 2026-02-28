@@ -576,6 +576,103 @@ function insertFrontMatter(type, data, position) {
         if (isFront) addPageBreak();
         break;
 
+      case 'foreword':
+        var fwPara = addPara('Foreword');
+        fwPara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+        fwPara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+
+        var fwText = addPara(data.text || 'Foreword text here...');
+        fwText.setSpacingBefore(20);
+
+        if (data.author) {
+          var fwAuthor = addPara('— ' + data.author);
+          fwAuthor.setAlignment(DocumentApp.HorizontalAlignment.RIGHT);
+          fwAuthor.editAsText().setItalic(true);
+          fwAuthor.setSpacingBefore(20);
+        }
+
+        if (isFront) addPageBreak();
+        break;
+
+      case 'preface':
+        var prefPara = addPara('Preface');
+        prefPara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+        prefPara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+
+        var prefText = addPara(data.text || 'Preface text here...');
+        prefText.setSpacingBefore(20);
+
+        if (isFront) addPageBreak();
+        break;
+
+      case 'epigraph':
+        var epPara = addPara('');
+        epPara.setSpacingBefore(80);
+
+        var epQuote = addPara(data.quote || '"The only way out is through."');
+        epQuote.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+        epQuote.editAsText().setItalic(true);
+        epQuote.editAsText().setFontSize(13);
+        epQuote.setSpacingBefore(40);
+
+        if (data.attribution) {
+          var epAttr = addPara(data.attribution);
+          epAttr.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+          epAttr.editAsText().setFontSize(11);
+          epAttr.editAsText().setForegroundColor('#666666');
+          epAttr.setSpacingBefore(10);
+        }
+
+        if (isFront) addPageBreak();
+        break;
+
+      case 'glossary':
+        var glPara = addPara('Glossary');
+        glPara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+        glPara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+
+        var glText = addPara(data.text || 'Term 1: Definition...\nTerm 2: Definition...');
+        glText.setSpacingBefore(20);
+
+        if (isFront) addPageBreak();
+        break;
+
+      case 'reading-guide':
+        var rgPara = addPara('Reading Guide');
+        rgPara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+        rgPara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+
+        var rgSubtitle = addPara('Discussion Questions');
+        rgSubtitle.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+        rgSubtitle.editAsText().setItalic(true);
+        rgSubtitle.editAsText().setFontSize(13);
+        rgSubtitle.editAsText().setForegroundColor('#555555');
+
+        var rgText = addPara(data.text || '1. What did you think about...?\n2. How did the main character...?');
+        rgText.setSpacingBefore(20);
+
+        if (isFront) addPageBreak();
+        break;
+
+      case 'excerpt':
+        var exPara = addPara('Sneak Peek');
+        exPara.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+        exPara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+
+        if (data.bookTitle) {
+          var exTitle = addPara('From: ' + data.bookTitle);
+          exTitle.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+          exTitle.editAsText().setItalic(true);
+          exTitle.editAsText().setFontSize(14);
+          exTitle.setSpacingBefore(10);
+        }
+
+        var exText = addPara(data.text || 'Preview excerpt text here...');
+        exText.setSpacingBefore(20);
+
+        if (isFront) addPageBreak();
+        break;
+
       default:
         throw new Error('Unknown matter type: ' + type);
     }
