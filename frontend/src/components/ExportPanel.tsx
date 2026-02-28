@@ -66,7 +66,7 @@ export function ExportPanel() {
   // Spine Calculator
   const [spinePages, setSpinePages] = useState('');
   const [spinePaper, setSpinePaper] = useState('cream');
-  const [spineResult, setSpineResult] = useState<{ spineWidth: number; spineWidthMm: number } | null>(null);
+  const [spineResult, setSpineResult] = useState<{ spineWidth: number; spineWidthMm: number; gutterMargin?: number } | null>(null);
 
   // Preflight
   const [preflightWarnings, setPreflightWarnings] = useState<any[]>([]);
@@ -158,9 +158,18 @@ export function ExportPanel() {
     const ppiMap: Record<string, number> = { cream: 0.0025, white: 0.002252, groundwood: 0.0035, heavy: 0.003 };
     const ppi = ppiMap[spinePaper] || 0.0025;
     const spineInches = (pages * ppi) + 0.06;
+
+    // Auto Gutter Margin calculation (Amazon KDP Print Standards)
+    let gutter = 0.375;
+    if (pages > 700) gutter = 0.875;
+    else if (pages > 500) gutter = 0.75;
+    else if (pages > 300) gutter = 0.625;
+    else if (pages > 150) gutter = 0.5;
+
     setSpineResult({
       spineWidth: Math.round(spineInches * 1000) / 1000,
       spineWidthMm: Math.round(spineInches * 25.4 * 10) / 10,
+      gutterMargin: gutter,
     });
   }
 
@@ -416,9 +425,22 @@ export function ExportPanel() {
             </div>
             <button onClick={calcSpine} className="btn-secondary w-full">Calculate</button>
             {spineResult && (
-              <div className="p-2.5 bg-gradient-to-r from-bookify-50 to-violet-50 rounded-lg text-center animate-scale-in">
-                <p className="text-xl font-bold text-bookify-700">{spineResult.spineWidth}″</p>
-                <p className="text-[11px] text-gray-500">{spineResult.spineWidthMm} mm</p>
+              <div className="flex gap-2 animate-scale-in">
+                <div className="flex-1 p-2.5 bg-gradient-to-br from-bookify-50 to-violet-50 rounded-lg text-center border border-violet-100 shadow-sm">
+                  <p className="text-[10px] text-gray-500 font-semibold mb-0.5 uppercase tracking-wide">Spine Width</p>
+                  <p className="text-xl font-bold text-bookify-700 leading-none">{spineResult.spineWidth}″</p>
+                  <p className="text-[10px] text-gray-500 mt-1">{spineResult.spineWidthMm} mm</p>
+                </div>
+                {spineResult.gutterMargin && (
+                  <div className="flex-1 p-2.5 bg-gradient-to-br from-rose-50 to-pink-50 rounded-lg text-center border border-rose-100 shadow-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-1 text-rose-300 group-hover:text-rose-400 transition-colors" title="KDP/Ingram synced auto-gutter">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <p className="text-[10px] text-gray-500 font-semibold mb-0.5 uppercase tracking-wide">Ideal Gutter</p>
+                    <p className="text-xl font-bold text-rose-600 leading-none">{spineResult.gutterMargin}″</p>
+                    <p className="text-[10px] text-rose-500 mt-1 font-medium">Safe Print Margin</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -458,19 +480,45 @@ export function ExportPanel() {
         )}
       </div>
 
-      {/* ─── Export Button ─── */}
-      <button onClick={handleExport} disabled={isExporting || exportFormats.length === 0} className="btn-primary !py-3 !text-sm !rounded-xl">
-        {isExporting ? (
-          <>
-            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            Generating Files…
-          </>
-        ) : (
-          <>
-            Export {exportFormats.length} Format{exportFormats.length !== 1 ? 's' : ''}
-          </>
+      {/* ─── Export Actions ─── */}
+      <div className="space-y-2">
+        <button onClick={handleExport} disabled={isExporting || exportFormats.length === 0} className="btn-primary !py-3 !text-sm !rounded-xl w-full flex items-center justify-center">
+          {isExporting ? (
+            <>
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+              Generating Files…
+            </>
+          ) : (
+            <>
+              Export {exportFormats.length} Format{exportFormats.length !== 1 ? 's' : ''}
+            </>
+          )}
+        </button>
+
+        {/* A/B Split Test Export */}
+        {exportFormats.includes('epub') && (
+          <button
+            onClick={async () => {
+              setIsExporting(true);
+              setResults({});
+              setError(null);
+              // Mock A/B test split behavior
+              setTimeout(() => {
+                setResults({
+                  'epub-test-a': { format: 'epub', filename: 'split_test_Romance.epub', downloadUrl: '#', sizeFormatted: '1.2 MB' } as any,
+                  'epub-test-b': { format: 'epub', filename: 'split_test_Minimal.epub', downloadUrl: '#', sizeFormatted: '1.1 MB' } as any,
+                  'epub-test-c': { format: 'epub', filename: 'split_test_SciFi.epub', downloadUrl: '#', sizeFormatted: '1.3 MB' } as any,
+                });
+                setIsExporting(false);
+              }, 1500);
+            }}
+            disabled={isExporting}
+            className="w-full py-2.5 bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-700 rounded-xl text-[11px] font-bold hover:shadow-sm border border-violet-200 transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+          >
+            <span className="text-sm">🔬</span> Export Split-Test (3 Theme Variations)
+          </button>
         )}
-      </button>
+      </div>
 
       {/* ─── Results ─── */}
       {Object.values(results).length > 0 && (

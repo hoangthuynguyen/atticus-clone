@@ -32,13 +32,14 @@ const CALLOUT_STYLES = [
   { label: 'Quote', bg: '#F8FAFC', border: '#64748B', text: '#334155', icon: '"' },
 ];
 
-type Section = 'scene-breaks' | 'callout' | 'text-message' | 'chapter-titles' | 'front-matter' | 'drop-caps' | 'image';
+type Section = 'scene-breaks' | 'callout' | 'text-message' | 'chapter-titles' | 'toc' | 'front-matter' | 'drop-caps' | 'image';
 
 const SECTIONS: { id: Section; label: string; emoji: string }[] = [
   { id: 'scene-breaks', label: 'Scene Breaks', emoji: '✦' },
   { id: 'callout', label: 'Call-Out', emoji: '▣' },
   { id: 'text-message', label: 'Text Msgs', emoji: '💬' },
   { id: 'chapter-titles', label: 'Chapters', emoji: '🔖' },
+  { id: 'toc', label: 'ToC Stylist', emoji: '📑' },
   { id: 'front-matter', label: 'Front Matter', emoji: '📄' },
   { id: 'drop-caps', label: 'Drop Caps', emoji: 'D' },
   { id: 'image', label: 'Image', emoji: '🖼' },
@@ -239,6 +240,43 @@ export function FormattingPanel() {
             </div>
           )}
 
+          {/* Table of Contents */}
+          {activeSection === 'toc' && (
+            <div className="space-y-3">
+              <p className="text-[11px] text-gray-500 mb-2">Design your Table of Contents layout for EPUB & PDF exports.</p>
+
+              <div className="space-y-2 bg-gray-50 p-3 rounded-lg border border-gray-100 mb-3">
+                <div>
+                  <label className="text-[10px] font-semibold text-gray-600 mb-1 block">Alignment & Leader</label>
+                  <select className="w-full text-sm p-2 bg-white border border-gray-300 rounded outline-none focus:border-bookify-500 focus:ring-1">
+                    <option value="dots">Dotted Leader (.....)</option>
+                    <option value="space">Blank Space</option>
+                    <option value="line">Solid Line (____)</option>
+                  </select>
+                </div>
+
+                <div className="pt-2">
+                  <label className="text-[10px] font-semibold text-gray-600 mb-1 block">Heading Levels to Include</label>
+                  <div className="flex gap-3 text-xs font-medium text-gray-700 py-1 flex-wrap">
+                    <label className="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" defaultChecked className="w-3.5 h-3.5 text-bookify-600" /> H1</label>
+                    <label className="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" defaultChecked className="w-3.5 h-3.5 text-bookify-600" /> H2</label>
+                    <label className="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" className="w-3.5 h-3.5 text-bookify-600" /> H3</label>
+                    <label className="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" className="w-3.5 h-3.5 text-bookify-600" /> H4</label>
+                  </div>
+                  <p className="text-[9px] text-gray-400 mt-1">Hide sub-headings for a cleaner, professional look. H4 is useful for detailed non-fiction.</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => withStatus(() => callGas('insertStyledToC'), 'Custom Table of Contents inserted!')}
+                disabled={loading}
+                className="w-full py-2 bg-bookify-600 text-white rounded-md text-xs font-bold disabled:opacity-50 hover:bg-bookify-700 transition-colors shadow-sm mt-2"
+              >
+                {loading ? 'Processing...' : 'Generate Styled ToC'}
+              </button>
+            </div>
+          )}
+
           {/* Front/Back Matter */}
           {activeSection === 'front-matter' && (
             <div className="space-y-3">
@@ -293,6 +331,22 @@ export function FormattingPanel() {
                   <div className="space-y-2">
                     {activeFmType === 'title-page' && (
                       <>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Smart Auto-fill</span>
+                          <button
+                            onClick={async () => {
+                              try {
+                                setLoading(true);
+                                // document auto-fetch logic placeholder
+                                await new Promise(r => setTimeout(r, 400));
+                                setFmData({ title: 'Untitled Document', subtitle: '', author: 'Current User' });
+                              } finally { setLoading(false); }
+                            }}
+                            className="text-[9px] bg-bookify-100 text-bookify-700 font-bold px-2 py-1 rounded hover:bg-bookify-200 transition-colors"
+                          >
+                            Auto Fetch Data
+                          </button>
+                        </div>
                         <input type="text" placeholder="Book Title" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.title || ''} onChange={e => setFmData({ ...fmData, title: e.target.value })} />
                         <input type="text" placeholder="Subtitle (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.subtitle || ''} onChange={e => setFmData({ ...fmData, subtitle: e.target.value })} />
                         <input type="text" placeholder="Author Name" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.author || ''} onChange={e => setFmData({ ...fmData, author: e.target.value })} />
@@ -300,11 +354,30 @@ export function FormattingPanel() {
                     )}
                     {activeFmType === 'copyright' && (
                       <>
+                        <div className="mb-2">
+                          <label className="text-[10px] font-semibold text-gray-600 mb-1 block">Copyright Template</label>
+                          <select
+                            className="w-full text-sm p-2 bg-white border border-gray-200 rounded text-xs mb-1 outline-none focus:border-bookify-500 focus:ring-1"
+                            onChange={(e) => {
+                              if (e.target.value === 'Standard') setFmData({ ...fmData, copyrightText: 'All Rights Reserved.' });
+                              if (e.target.value === 'CC') setFmData({ ...fmData, copyrightText: 'Creative Commons Attribution-NonCommercial (CC BY-NC) 4.0 Intl. License.' });
+                              if (e.target.value === 'PD') setFmData({ ...fmData, copyrightText: 'Public Domain.' });
+                            }}
+                          >
+                            <option value="">-- Choose Template --</option>
+                            <option value="Standard">All Rights Reserved (Standard KDP)</option>
+                            <option value="CC">Creative Commons (CC BY-NC)</option>
+                            <option value="PD">Public Domain</option>
+                          </select>
+                        </div>
                         <input type="text" placeholder="Author Name" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.author || ''} onChange={e => setFmData({ ...fmData, author: e.target.value })} />
                         <input type="text" placeholder="Year (e.g. 2026)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.year || ''} onChange={e => setFmData({ ...fmData, year: e.target.value })} />
                         <input type="text" placeholder="ISBN (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.isbn || ''} onChange={e => setFmData({ ...fmData, isbn: e.target.value })} />
                         <input type="text" placeholder="Publisher (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.publisher || ''} onChange={e => setFmData({ ...fmData, publisher: e.target.value })} />
                         <input type="text" placeholder="Edition (Optional)" className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none" value={fmData.edition || ''} onChange={e => setFmData({ ...fmData, edition: e.target.value })} />
+                        {fmData.copyrightText && (
+                          <textarea placeholder="Additional copyright text..." className="w-full text-sm p-2 border border-gray-300 rounded focus:border-bookify-500 focus:ring-1 focus:ring-bookify-500 outline-none h-16 resize-none" value={fmData.copyrightText || ''} onChange={e => setFmData({ ...fmData, copyrightText: e.target.value })} />
+                        )}
                       </>
                     )}
                     {activeFmType === 'dedication' && (

@@ -21,66 +21,44 @@ const CONFIG = {
 
 /**
  * Called when the document is opened. Adds the Bookify menu.
+ * Handles AuthMode properly for Editor Add-on.
  * @param {GoogleAppsScript.Events.DocsOnOpen} e - The onOpen event
  */
 function onOpen(e) {
-  DocumentApp.getUi()
-    .createMenu('Bookify')
-    .addItem('Open Formatter', 'openSidebar')
-    .addSeparator()
-    .addSubMenu(
-      DocumentApp.getUi().createMenu('Quick Export')
-        .addItem('Export EPUB', 'quickExportEpub')
-        .addItem('Export PDF', 'quickExportPdf')
-        .addItem('Export DOCX', 'quickExportDocx')
-    )
-    .addSeparator()
-    .addSubMenu(
-      DocumentApp.getUi().createMenu('Insert')
-        .addItem('Chapter Break', 'insertChapterBreak')
-        .addItem('Scene Break (***)', 'insertDefaultSceneBreak')
-    )
-    .addSeparator()
-    .addItem('Word Count', 'showWordCount')
-    .addItem('Validate for EPUB', 'quickValidate')
-    .addToUi();
+  var ui = DocumentApp.getUi();
+  var menu = ui.createMenu('Bookify');
+
+  menu.addItem('Open Formatter', 'openSidebar');
+
+  // When auth mode is FULL, show complete menu
+  if (e && e.authMode !== ScriptApp.AuthMode.NONE) {
+    menu.addSeparator()
+      .addSubMenu(
+        ui.createMenu('Quick Export')
+          .addItem('Export EPUB', 'quickExportEpub')
+          .addItem('Export PDF', 'quickExportPdf')
+          .addItem('Export DOCX', 'quickExportDocx')
+      )
+      .addSeparator()
+      .addSubMenu(
+        ui.createMenu('Insert')
+          .addItem('Chapter Break', 'insertChapterBreak')
+          .addItem('Scene Break (***)', 'insertDefaultSceneBreak')
+      )
+      .addSeparator()
+      .addItem('Word Count', 'showWordCount')
+      .addItem('Validate for EPUB', 'quickValidate');
+  }
+
+  menu.addToUi();
 }
 
 /**
- * Called when the add-on homepage is opened (Card Service).
- * @param {object} e - The homepage event
- * @returns {GoogleAppsScript.Card_Service.Card}
+ * Called when the add-on is installed. Required for Editor Add-ons.
+ * @param {GoogleAppsScript.Events.DocsOnOpen} e - The install event
  */
-function onHomepage(e) {
-  return CardService.newCardBuilder()
-    .setHeader(
-      CardService.newCardHeader()
-        .setTitle('Bookify')
-        .setSubtitle('Format & Export your book')
-        .setImageStyle(CardService.ImageStyle.CIRCLE)
-    )
-    .addSection(
-      CardService.newCardSection()
-        .addWidget(
-          CardService.newTextParagraph()
-            .setText('Professional book formatting and export directly from Google Docs. Export to EPUB, PDF, and DOCX.')
-        )
-        .addWidget(
-          CardService.newTextButton()
-            .setText('Open Bookify Panel')
-            .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-            .setOnClickAction(CardService.newAction().setFunctionName('openSidebar'))
-        )
-    )
-    .build();
-}
-
-/**
- * Called when file scope is granted.
- * @param {object} e - The event
- */
-function onFileScopeGranted(e) {
-  openSidebar();
+function onInstall(e) {
+  onOpen(e);
 }
 
 // =============================================================================

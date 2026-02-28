@@ -18,7 +18,32 @@ const PORT = process.env.PORT || 3000;
 // Security & Middleware
 // =============================================================================
 
-app.use(helmet());
+app.use(helmet({
+  // Allow Google Docs sidebar to embed this app in an iframe
+  frameguard: false, // Disable X-Frame-Options (handled by CSP instead)
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+      imgSrc: ["'self'", "data:", "https:"],
+      fontSrc: ["'self'", "https:", "data:"],
+      connectSrc: ["'self'", "https://bookify-ixxa.onrender.com"],
+      // Allow this app to be embedded in Google Docs sidebar iframe
+      frameAncestors: [
+        "'self'",
+        "https://*.google.com",
+        "https://*.googleusercontent.com",
+        "https://docs.google.com",
+        "https://script.google.com",
+        "https://*.google.com.au",
+      ],
+    },
+  },
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginOpenerPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'https://bookify-ixxa.onrender.com',
   /\.google\.com$/,

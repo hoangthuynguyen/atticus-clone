@@ -11,22 +11,15 @@
   },
   "exceptionLogging": "STACKDRIVER",
   "runtimeVersion": "V8",
-  "addOns": {
-    "common": {
-      "name": "Bookify",
-      "logoUrl": "https://bookify-ixxa.onrender.com/logo-32.png",
-      "layoutProperties": {
-        "primaryColor": "#0f172a",
-        "secondaryColor": "#3b82f6"
-      }
-    },
-    "docs": {
-      "homepageTrigger": {
-        "runFunction": "onHomepage"
-      },
-      "onFileScopeGrantedTrigger": {
-        "runFunction": "onFileScopeGranted"
-      }
-    }
-  }
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/documents.currentonly",
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/script.external_request",
+    "https://www.googleapis.com/auth/script.container.ui",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/script.scriptapp"
+  ],
+  "urlFetchWhitelist": [
+    "https://bookify-ixxa.onrender.com/"
+  ]
 }

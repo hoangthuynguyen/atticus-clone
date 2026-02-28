@@ -15,6 +15,8 @@ interface ThemePresetI {
   colorAccent: string;
   dropCaps: boolean;
   sceneBreakSymbol: string;
+  description?: string;
+  bestFor?: string;
 }
 
 const API_URL = (import.meta as unknown as { env: Record<string, string> }).env?.VITE_API_URL || 'https://bookify-ixxa.onrender.com';
@@ -31,6 +33,8 @@ const FALLBACK_THEMES: ThemePresetI[] = [
     colorAccent: '#333333',
     dropCaps: true,
     sceneBreakSymbol: '* * *',
+    description: 'Timeless serif typography inspired by traditional book design. Cinzel headings evoke classical elegance while Georgia body text ensures excellent readability on all devices.',
+    bestFor: 'Literary fiction, memoirs, autobiographies, and historical novels.',
   },
   {
     id: 't2',
@@ -43,6 +47,8 @@ const FALLBACK_THEMES: ThemePresetI[] = [
     colorAccent: '#be185d',
     dropCaps: true,
     sceneBreakSymbol: '♡ ♡ ♡',
+    description: 'Romantic script headings with elegant Lora body text. The pink accent color and heart scene breaks add a soft, romantic feel throughout.',
+    bestFor: 'Romance novels, chick-lit, women\'s fiction, and love stories.',
   },
   {
     id: 't3',
@@ -55,6 +61,8 @@ const FALLBACK_THEMES: ThemePresetI[] = [
     colorAccent: '#0ea5e9',
     dropCaps: false,
     sceneBreakSymbol: '- - -',
+    description: 'Clean, modern sans-serif design with tight line spacing. The blue accent and minimalist dashes create a high-tech, contemporary atmosphere.',
+    bestFor: 'Science fiction, thrillers, techno-thrillers, and contemporary fiction.',
   },
   {
     id: 't4',
@@ -67,6 +75,8 @@ const FALLBACK_THEMES: ThemePresetI[] = [
     colorAccent: '#6b21a8',
     dropCaps: true,
     sceneBreakSymbol: '✦ ✦ ✦',
+    description: 'Rich, ornate typography with EB Garamond body text that evokes medieval manuscripts. Purple accents and star scene breaks add a magical, epic quality.',
+    bestFor: 'Epic fantasy, high fantasy, sword & sorcery, and historical fantasy.',
   },
   {
     id: 't5',
@@ -79,7 +89,51 @@ const FALLBACK_THEMES: ThemePresetI[] = [
     colorAccent: '#0f766e',
     dropCaps: false,
     sceneBreakSymbol: '• • •',
-  }
+    description: 'Professional, authoritative design pairing sans-serif Montserrat headings with PT Serif body text. The teal accent conveys trust and expertise.',
+    bestFor: 'Business books, self-help, how-to guides, and professional development.',
+  },
+  {
+    id: 't6',
+    name: 'Children\'s Bright',
+    genre: 'Children\'s / Middle Grade',
+    bodyFont: 'Open Sans',
+    headingFont: 'Playfair Display',
+    fontSize: '13pt',
+    lineHeight: 1.7,
+    colorAccent: '#ea580c',
+    dropCaps: true,
+    sceneBreakSymbol: '✿ ✿ ✿',
+    description: 'Larger font size with generous spacing for younger readers. Playful headings and warm orange accents create an inviting, engaging reading experience.',
+    bestFor: 'Children\'s chapter books, middle grade fiction, and illustrated stories.',
+  },
+  {
+    id: 't7',
+    name: 'Horror Gothic',
+    genre: 'Horror / Dark Fiction',
+    bodyFont: 'Crimson Text',
+    headingFont: 'Cinzel',
+    fontSize: '11pt',
+    lineHeight: 1.55,
+    colorAccent: '#7f1d1d',
+    dropCaps: true,
+    sceneBreakSymbol: '† † †',
+    description: 'Dark, atmospheric typography with deep red accents. Crimson Text body and Cinzel headings evoke gothic horror aesthetics and classic horror novels.',
+    bestFor: 'Horror, gothic fiction, dark fantasy, and supernatural thrillers.',
+  },
+  {
+    id: 't8',
+    name: 'Academic',
+    genre: 'Academic / Textbook',
+    bodyFont: 'Roboto',
+    headingFont: 'Montserrat',
+    fontSize: '10.5pt',
+    lineHeight: 1.5,
+    colorAccent: '#1e40af',
+    dropCaps: false,
+    sceneBreakSymbol: '• • •',
+    description: 'Clean, structured layout ideal for academic writing. Sans-serif fonts ensure clarity while the blue accent adds a scholarly, professional tone.',
+    bestFor: 'Academic texts, textbooks, research papers, and educational materials.',
+  },
 ];
 
 export function ThemePanel() {
@@ -369,14 +423,23 @@ export function ThemePanel() {
                         <span>{theme.fontSize}</span>
                         <span>{theme.lineHeight}× spacing</span>
                         {theme.dropCaps && <span className="text-bookify-500">Drop caps</span>}
+                        <span title="Scene break symbol">Break: {theme.sceneBreakSymbol}</span>
                       </div>
+
+                      {/* Description & Best For */}
+                      {theme.description && (
+                        <p className="mt-1.5 text-[9px] text-gray-400 leading-relaxed">{theme.description}</p>
+                      )}
+                      {theme.bestFor && (
+                        <p className="mt-1 text-[9px] text-emerald-600 font-medium">✦ Best for: {theme.bestFor}</p>
+                      )}
 
                       {/* Mini preview */}
                       <div
                         className="mt-2 p-2 bg-gray-50 rounded text-[10px] leading-relaxed border border-gray-100"
                         style={{ fontFamily: `"${theme.bodyFont}", serif` }}
                       >
-                        <p style={{ color: theme.colorAccent, fontWeight: 700, fontSize: '11px', textAlign: 'center', letterSpacing: '0.05em' }}>
+                        <p style={{ color: theme.colorAccent, fontWeight: 700, fontSize: '11px', textAlign: 'center', letterSpacing: '0.05em', fontFamily: `"${theme.headingFont}", serif` }}>
                           Chapter One
                         </p>
                         <p className="mt-1 text-gray-600 line-clamp-2">

@@ -8,6 +8,7 @@ services:
   - type: web
     name: bookify-api
     runtime: docker
+    rootDir: ./
     dockerfilePath: ./Dockerfile
     plan: free
     region: singapore
