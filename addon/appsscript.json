@@ -21,5 +21,27 @@
   ],
   "urlFetchWhitelist": [
     "https://bookify-ixxa.onrender.com/"
-  ]
+  ],
+  "addOns": {
+    "common": {
+      "name": "Bookify",
+      "logoUrl": "https://bookify-ixxa.onrender.com/logo-32.png",
+      "useLocaleFromApp": true,
+      "homepageTrigger": {
+        "runFunction": "onHomepage"
+      },
+      "layoutProperties": {
+        "primaryColor": "#0f172a",
+        "secondaryColor": "#3b82f6"
+      }
+    },
+    "docs": {
+      "homepageTrigger": {
+        "runFunction": "onHomepage"
+      },
+      "onFileScopeGrantedTrigger": {
+        "runFunction": "onFileScopeGranted"
+      }
+    }
+  }
 }
