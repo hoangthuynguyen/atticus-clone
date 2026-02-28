@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { callGas } from '../hooks/useGasBridge';
 
 export function AutomationPanel() {
     const [activeSection, setActiveSection] = useState<'batch' | 'replace' | 'lowcontent' | 'metadata'>('batch');
@@ -17,12 +18,30 @@ export function AutomationPanel() {
         { id: '1', title: 'Book 1', author: 'Author Name', isbn: '', asin: '' }
     ]);
 
+    const [applying, setApplying] = useState(false);
+    const [status, setStatus] = useState<{ text: string; ok: boolean } | null>(null);
+
     const handleAddBook = () => {
         setBooks([...books, { id: Date.now().toString(), title: `Book ${books.length + 1}`, author: 'Author Name', isbn: '', asin: '' }]);
     };
 
     const handleUpdateBook = (id: string, field: string, value: string) => {
         setBooks(books.map(b => b.id === id ? { ...b, [field]: value } : b));
+    };
+
+    const handleReplace = async () => {
+        setApplying(true);
+        setStatus(null);
+        try {
+            const res: any = await callGas('globalReplaceText', findText, replaceText);
+            if (res && res.success) {
+                setStatus({ text: res.message, ok: true });
+            }
+        } catch (err: any) {
+            setStatus({ text: err.message || 'Replace failed', ok: false });
+        } finally {
+            setApplying(false);
+        }
     };
 
     return (
@@ -142,8 +161,14 @@ export function AutomationPanel() {
                                 </div>
                             </div>
 
-                            <button className="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-[12px] font-bold shadow-sm transition-all active:scale-[0.98] mt-2">
-                                Replace All ({replaceScope === 'boxset' ? 'Multiple Docs' : '1 Doc'})
+                            {status && (
+                                <div className={`p-2 rounded text-[11px] border ${status.ok ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                                    {status.text}
+                                </div>
+                            )}
+
+                            <button onClick={handleReplace} disabled={applying} className="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-[12px] font-bold shadow-sm transition-all active:scale-[0.98] mt-2 disabled:opacity-50">
+                                {applying ? 'Replacing...' : `Replace All (${replaceScope === 'boxset' ? 'Multiple Docs' : '1 Doc'})`}
                             </button>
                         </div>
                     </div>

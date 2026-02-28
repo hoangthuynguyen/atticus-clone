@@ -63,6 +63,7 @@ export function WritingToolsPanel() {
         <div className="animate-fade-in">
           {activeSection === 'wordcount' && <WordCountSection />}
           {activeSection === 'sprint' && <SprintTimerSection />}
+          {activeSection === 'pacing' && <PacingSection />}
           {activeSection === 'streak' && <StreakSection />}
           {activeSection === 'quotes' && <SmartQuotesSection />}
           {activeSection === 'analyze' && <AnalyzeSection />}
@@ -272,6 +273,69 @@ function SprintTimerSection() {
 
 // =============================================================================
 // Pacing Visualizer
+// =============================================================================
+
+function PacingSection() {
+  const [data, setData] = useState<{ index: number; avgSentenceLength: number; words: number }[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function loadPacing() {
+    setLoading(true);
+    try {
+      const res = await callGas<any[]>('getPacingData');
+      setData(res);
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { loadPacing(); }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        <div className="h-32 bg-gray-100 rounded-lg animate-pulse" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-[11px] text-gray-500">Sentence length across paragraphs. Shorter = faster pace (action), longer = slower (description).</p>
+
+      {!data || data.length === 0 ? (
+        <p className="text-[11px] text-gray-400">Pacing data unavailable.</p>
+      ) : (
+        <div className="p-3 bg-gray-50 border border-gray-100 rounded-lg">
+          <div className="flex items-end gap-1 h-32 w-full overflow-x-auto hide-scrollbar">
+            {data.map((d) => (
+              <div
+                key={d.index}
+                className={`w-4 rounded-t-sm flex-shrink-0 transition-opacity hover:opacity-80
+                   ${d.avgSentenceLength < 10 ? 'bg-red-400' : d.avgSentenceLength > 20 ? 'bg-blue-400' : 'bg-green-400'}
+                `}
+                style={{ height: `${Math.min(100, (d.avgSentenceLength / 30) * 100)}%` }}
+                title={`Paragraph ${d.index}: ${d.avgSentenceLength} words/sentence`}
+              />
+            ))}
+          </div>
+          <div className="flex justify-between text-[9px] text-gray-400 mt-2">
+            <span>Start</span>
+            <span>End</span>
+          </div>
+          <div className="flex justify-center gap-3 mt-2 text-[9px] text-gray-500">
+            <span className="flex items-center gap-1"><div className="w-2 h-2 bg-red-400 rounded-sm"></div> Fast (&lt;10w)</span>
+            <span className="flex items-center gap-1"><div className="w-2 h-2 bg-green-400 rounded-sm"></div> Balanced</span>
+            <span className="flex items-center gap-1"><div className="w-2 h-2 bg-blue-400 rounded-sm"></div> Slow (&gt;20w)</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // =============================================================================
 // Writing Streak
 // =============================================================================

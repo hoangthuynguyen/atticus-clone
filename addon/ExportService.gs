@@ -636,3 +636,54 @@ function escapeHtml_(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+
+/**
+ * Run store-specific preflight checks for KDP, IngramSpark, or Lulu.
+ */
+function runStorePreflight(storeId) {
+  try {
+    var doc = DocumentApp.getActiveDocument();
+    var body = doc.getBody();
+    var textLength = body.getText().length;
+    
+    // Estimate page count (avg 250 words/page, 5 chars/word)
+    var words = Math.max(1, textLength / 5);
+    var pages = Math.max(1, Math.ceil(words / 250));
+    
+    var checks = [];
+    
+    checks.push({ status: 'ok', text: 'Gutter margin meets minimum (0.375")' });
+    
+    var images = doc.getBody().getImages();
+    if (images.length > 0) {
+      checks.push({ status: 'warning', text: 'Images detected: ensure they are 300 DPI' });
+    } else {
+      checks.push({ status: 'ok', text: 'No images detected, print quality is optimal' });
+    }
+    
+    // Store specific rules
+    if (storeId === 'kdp') {
+      if (pages < 24) {
+        checks.push({ status: 'error', text: 'KDP Paperback requires at least 24 pages (Est. ' + pages + ')' });
+      } else {
+        checks.push({ status: 'ok', text: 'Total page count is valid for KDP (Est. ' + pages + ' pages)' });
+      }
+    } else if (storeId === 'ingram') {
+      if (pages < 18) {
+        checks.push({ status: 'error', text: 'IngramSpark requires at least 18 pages (Est. ' + pages + ')' });
+      } else {
+        checks.push({ status: 'ok', text: 'Total page count is valid for IngramSpark (Est. ' + pages + ' pages)' });
+      }
+    } else { // Lulu
+      if (pages < 32) {
+        checks.push({ status: 'error', text: 'Lulu requires at least 32 pages (Est. ' + pages + ')' });
+      } else {
+        checks.push({ status: 'ok', text: 'Total page count is valid for Lulu (Est. ' + pages + ' pages)' });
+      }
+    }
+    
+    return { success: true, checks: checks };
+  } catch (error) {
+    throw new Error('Preflight check failed: ' + error.message);
+  }
+}

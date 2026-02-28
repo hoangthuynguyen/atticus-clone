@@ -585,3 +585,101 @@ function insertFrontMatter(type, data, position) {
     throw new Error('Insert ' + position + ' matter failed: ' + error.message);
   }
 }
+
+// =============================================================================
+// Automation & Typesetting
+// =============================================================================
+
+/**
+ * Apply smart typesetting including orphan/widow control and justification.
+ */
+function applySmartTypesetting(options) {
+  try {
+    var doc = DocumentApp.getActiveDocument();
+    var body = doc.getBody();
+    var paragraphs = body.getParagraphs();
+    
+    var strictness = options.strictness || 2;
+    var controlOrphans = options.controlOrphans !== false;
+    var removeRivers = options.removeRivers !== false;
+    
+    for (var i = 0; i < paragraphs.length; i++) {
+      var p = paragraphs[i];
+      var text = p.getText().trim();
+      
+      if (text.length > 0) {
+        // Justify text to avoid rivers of white, Docs natively spaces it
+        if (removeRivers && p.getHeading() === DocumentApp.ParagraphHeading.NORMAL) {
+          p.setAlignment(DocumentApp.HorizontalAlignment.JUSTIFY);
+        }
+        
+        // Orphan/Widow control (Keep lines together)
+        if (controlOrphans && p.getHeading() === DocumentApp.ParagraphHeading.NORMAL) {
+          p.setKeepLinesTogether(true);
+        }
+        
+        // Keep headings with next paragraph
+        if (p.getHeading() !== DocumentApp.ParagraphHeading.NORMAL) {
+          p.setKeepWithNext(true);
+        }
+      }
+    }
+    
+    return { success: true, message: 'Smart Typesetting applied successfully.' };
+  } catch (error) {
+    throw new Error('Smart Typesetting failed: ' + error.message);
+  }
+}
+
+/**
+ * Replace all scene breaks with a new style
+ */
+function applySceneBreakStyle(styleStr) {
+  try {
+    var doc = DocumentApp.getActiveDocument();
+    var body = doc.getBody();
+    
+    // Simple heuristic: paragraphs with length <= 5 that contain *, •, etc.
+    var sceneBreakRegex = /^[\*\•\✦\-\~\❁\s]+$/;
+    var paragraphs = body.getParagraphs();
+    var count = 0;
+    
+    for (var i = 0; i < paragraphs.length; i++) {
+      var p = paragraphs[i];
+      var text = p.getText().trim();
+      
+      if (text.length > 0 && text.length <= 15 && sceneBreakRegex.test(text)) {
+        p.setText(styleStr);
+        p.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+        var t = p.editAsText();
+        t.setFontSize(14);
+        t.setForegroundColor('#999999');
+        count++;
+      }
+    }
+    
+    return { success: true, count: count };
+  } catch(err) {
+    throw new Error('Scene break update failed: ' + err.message);
+  }
+}
+
+/**
+ * Global find and replace within the document.
+ */
+function globalReplaceText(findText, replaceText) {
+  try {
+    if (!findText) throw new Error("Find text is required");
+    var doc = DocumentApp.getActiveDocument();
+    var body = doc.getBody();
+    
+    // Simple text replacement
+    // Escape regex characters just in case it's used as regex
+    var escapedRegex = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    body.replaceText(escapedRegex, replaceText);
+    
+    return { success: true, message: 'Replaced all occurrences of ' + findText + ' with ' + replaceText };
+  } catch (err) {
+    throw new Error('Replace failed: ' + err.message);
+  }
+}

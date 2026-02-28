@@ -1,8 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { callGas } from '../hooks/useGasBridge';
 
 // PublishingPanel component
 export function PublishingPanel() {
     const [activeSubTab, setActiveSubTab] = useState<'api' | 'preflight' | 'interactive'>('api');
+
+    const [storeSelect, setStoreSelect] = useState('kdp');
+    const [preflightData, setPreflightData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    const handlePreflight = async () => {
+        setLoading(true);
+        try {
+            const res: any = await callGas('runStorePreflight', storeSelect);
+            if (res && res.success) {
+                setPreflightData(res.checks);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // run initially when preflight tab selected
+    useEffect(() => {
+        if (activeSubTab === 'preflight') {
+            handlePreflight();
+        }
+    }, [activeSubTab, storeSelect]);
 
     return (
         <div className="flex flex-col h-full bg-slate-50">
@@ -90,7 +116,11 @@ export function PublishingPanel() {
 
                         <div className="p-3 border border-gray-100 rounded-lg mb-4">
                             <label className="text-xs font-semibold text-gray-700 block mb-2">Target Printer / Store</label>
-                            <select className="w-full text-sm p-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-bookify-500">
+                            <select
+                                value={storeSelect}
+                                onChange={e => setStoreSelect(e.target.value)}
+                                className="w-full text-sm p-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-bookify-500"
+                            >
                                 <option value="kdp">Amazon KDP (Paperback/Hardcover)</option>
                                 <option value="ingram">IngramSpark</option>
                                 <option value="lulu">Lulu</option>
@@ -98,28 +128,26 @@ export function PublishingPanel() {
                         </div>
 
                         <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-xs p-2 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span>Gutter margin meets minimum (0.375")</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs p-2 rounded-lg bg-amber-50 text-amber-700 border border-amber-100">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                                <span>Images are below 300 DPI recommended for IngramSpark</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs p-2 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span>Total page count is valid (154 pages)</span>
-                            </div>
+                            {loading ? (
+                                <p className="text-xs text-gray-500 text-center py-4">Scanning document...</p>
+                            ) : preflightData.length > 0 ? (
+                                preflightData.map((check, idx) => (
+                                    <div key={idx} className={`flex items-center gap-2 text-xs p-2 rounded-lg border ${check.status === 'ok' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : check.status === 'error' ? 'bg-red-50 text-red-700 border-red-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            {check.status === 'ok' ? (
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            ) : (
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                            )}
+                                        </svg>
+                                        <span>{check.text}</span>
+                                    </div>
+                                ))
+                            ) : null}
                         </div>
 
-                        <button className="w-full py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold mt-4 hover:bg-gray-200 transition-colors">
-                            Re-scan Document
+                        <button onClick={handlePreflight} disabled={loading} className="w-full py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold mt-4 hover:bg-gray-200 transition-colors disabled:opacity-50">
+                            {loading ? 'Rescanning...' : 'Re-scan Document'}
                         </button>
                     </div>
                 )}

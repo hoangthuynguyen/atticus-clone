@@ -694,3 +694,36 @@ function generateTableOfContents() {
   }
 }
 
+
+// =============================================================================
+// Pacing Visualizer
+// =============================================================================
+
+function getPacingData() {
+  try {
+    var doc = DocumentApp.getActiveDocument();
+    var text = doc.getBody().getText();
+    var paragraphs = text.split('\n');
+    var data = [];
+    
+    // Process up to 100 paragraphs to avoid slow response
+    for (var i = 0; i < Math.min(paragraphs.length, 100); i++) {
+        var p = paragraphs[i].trim();
+        if (p.length > 0) {
+            var sentences = p.match(/[^\.!\?]+[\.!\?]+/g);
+            var numSentences = sentences ? sentences.length : 1;
+            var wordsCount = p.split(/\s+/).length || 1;
+            var avgSentenceLength = Math.round(wordsCount / numSentences);
+            
+            data.push({
+                index: i + 1,
+                avgSentenceLength: avgSentenceLength,
+                words: wordsCount
+            });
+        }
+    }
+    return data;
+  } catch (err) {
+    throw new Error('Get pacing data failed: ' + err.message);
+  }
+}

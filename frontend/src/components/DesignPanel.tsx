@@ -1,9 +1,47 @@
 import { useState } from 'react';
+import { callGas } from '../hooks/useGasBridge';
 
 // DesignPanel component
 
 export function DesignPanel() {
     const [activeSubTab, setActiveSubTab] = useState<'headers' | 'typesetting' | 'mockup'>('headers');
+
+    const [applying, setApplying] = useState(false);
+    const [status, setStatus] = useState<{ text: string; ok: boolean } | null>(null);
+
+    // Typesetting state
+    const [controlOrphans, setControlOrphans] = useState(true);
+    const [removeRivers, setRemoveRivers] = useState(true);
+    const [strictness, setStrictness] = useState(2);
+
+    // Scene Break Builder
+    const [sceneBreakStr, setSceneBreakStr] = useState('***');
+
+    const handleApplySceneBreakStyle = async () => {
+        setApplying(true);
+        setStatus(null);
+        try {
+            const res: any = await callGas('applySceneBreakStyle', sceneBreakStr);
+            if (res.success) setStatus({ text: `Updated ${res.count} scene breaks!`, ok: true });
+        } catch (err: any) {
+            setStatus({ text: err.message || 'Failed to update', ok: false });
+        } finally {
+            setApplying(false);
+        }
+    };
+
+    const handleRunTypesetting = async () => {
+        setApplying(true);
+        setStatus(null);
+        try {
+            const res: any = await callGas('applySmartTypesetting', { controlOrphans, removeRivers, strictness });
+            if (res.success) setStatus({ text: res.message, ok: true });
+        } catch (err: any) {
+            setStatus({ text: err.message || 'Failed analysis', ok: false });
+        } finally {
+            setApplying(false);
+        }
+    };
 
     return (
         <div className="flex flex-col h-full bg-slate-50">
@@ -48,6 +86,12 @@ export function DesignPanel() {
                             </div>
                         </div>
 
+                        {status && (
+                            <div className={`p-2 rounded text-[11px] border ${status.ok ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                                {status.text}
+                            </div>
+                        )}
+
                         <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 flex flex-col items-center justify-center text-center bg-gray-50/50">
                             <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-3">
                                 <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -65,9 +109,9 @@ export function DesignPanel() {
                             <div className="p-3 border border-gray-100 rounded-lg">
                                 <h5 className="text-xs font-semibold text-gray-700 mb-2">Scene Break Styles</h5>
                                 <div className="flex gap-2 justify-center py-2">
-                                    <span>***</span>
-                                    <span>•••</span>
-                                    <span>❁ ❁ ❁</span>
+                                    <button onClick={() => setSceneBreakStr('***')} className={`px-2 py-1 rounded ${sceneBreakStr === '***' ? 'bg-bookify-100' : 'hover:bg-gray-100'}`}>***</button>
+                                    <button onClick={() => setSceneBreakStr('•••')} className={`px-2 py-1 rounded ${sceneBreakStr === '•••' ? 'bg-bookify-100' : 'hover:bg-gray-100'}`}>•••</button>
+                                    <button onClick={() => setSceneBreakStr('❁ ❁ ❁')} className={`px-2 py-1 rounded ${sceneBreakStr === '❁ ❁ ❁' ? 'bg-bookify-100' : 'hover:bg-gray-100'}`}>❁ ❁ ❁</button>
                                 </div>
                             </div>
                             <div className="p-3 border border-gray-100 rounded-lg">
@@ -79,6 +123,14 @@ export function DesignPanel() {
                                 </select>
                             </div>
                         </div>
+
+                        <button
+                            onClick={handleApplySceneBreakStyle}
+                            disabled={applying}
+                            className="w-full py-2.5 mt-2 bg-gradient-to-r from-pink-600 to-rose-500 text-white rounded-lg text-xs font-bold shadow-sm disabled:opacity-50"
+                        >
+                            {applying ? 'Updating Elements...' : `Apply Scene Break (${sceneBreakStr})`}
+                        </button>
                     </div>
                 )}
 
@@ -103,8 +155,9 @@ export function DesignPanel() {
                                     <span className="text-sm font-medium text-gray-700 block">AI Orphan & Widow Control</span>
                                     <span className="text-xs text-gray-500">Automatically re-flow paragraphs to prevent single stranded lines.</span>
                                 </div>
-                                <div className="w-10 h-6 bg-bookify-500 rounded-full relative">
-                                    <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                                <div className={`w-10 h-6 rounded-full relative transition-colors ${controlOrphans ? 'bg-bookify-500' : 'bg-gray-300'}`}>
+                                    <input type="checkbox" checked={controlOrphans} onChange={e => setControlOrphans(e.target.checked)} className="hidden" />
+                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${controlOrphans ? 'right-1' : 'left-1'}`}></div>
                                 </div>
                             </label>
 
@@ -113,17 +166,18 @@ export function DesignPanel() {
                                     <span className="text-sm font-medium text-gray-700 block">Remove "Rivers of White"</span>
                                     <span className="text-xs text-gray-500">Subtly adjusts word spacing to fix awkward gaps.</span>
                                 </div>
-                                <div className="w-10 h-6 bg-bookify-500 rounded-full relative">
-                                    <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                                <div className={`w-10 h-6 rounded-full relative transition-colors ${removeRivers ? 'bg-bookify-500' : 'bg-gray-300'}`}>
+                                    <input type="checkbox" checked={removeRivers} onChange={e => setRemoveRivers(e.target.checked)} className="hidden" />
+                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${removeRivers ? 'right-1' : 'left-1'}`}></div>
                                 </div>
                             </label>
 
                             <div className="p-3 border border-gray-100 rounded-lg">
                                 <div className="flex justify-between items-center mb-2">
                                     <span className="text-sm font-medium text-gray-700">Hyphenation Strictness</span>
-                                    <span className="text-xs font-bold text-bookify-600">Moderate</span>
+                                    <span className="text-xs font-bold text-bookify-600">{strictness === 1 ? 'Mild' : strictness === 2 ? 'Moderate' : 'Strict'}</span>
                                 </div>
-                                <input type="range" className="w-full accent-bookify-500" min="1" max="3" defaultValue="2" />
+                                <input type="range" className="w-full accent-bookify-500" min="1" max="3" value={strictness} onChange={e => setStrictness(parseInt(e.target.value))} />
                                 <div className="flex justify-between text-[10px] text-gray-400 mt-1">
                                     <span>Fewer Hyphens</span>
                                     <span>Balanced</span>
@@ -132,8 +186,12 @@ export function DesignPanel() {
                             </div>
                         </div>
 
-                        <button className="w-full py-2.5 mt-2 bg-gradient-to-r from-bookify-600 to-indigo-600 text-white rounded-lg text-xs font-bold shadow-sm hover:shadow-md transition-shadow">
-                            Run AI Typesetting Analysis
+                        <button
+                            onClick={handleRunTypesetting}
+                            disabled={applying}
+                            className="w-full py-2.5 mt-2 bg-gradient-to-r from-bookify-600 to-indigo-600 text-white rounded-lg text-xs font-bold shadow-sm hover:shadow-md transition-shadow disabled:opacity-50"
+                        >
+                            {applying ? 'Processing Document...' : 'Run AI Typesetting Analysis'}
                         </button>
                     </div>
                 )}
